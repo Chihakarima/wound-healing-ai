@@ -1,6 +1,7 @@
 """Calcul de la surface de la plaie à partir d'un masque binaire."""
 import cv2
 import numpy as np
+from scipy.spatial.distance import directed_hausdorff
 
 
 def wound_area_px(mask: np.ndarray) -> int:
@@ -42,3 +43,30 @@ def extract_contours(mask: np.ndarray) -> list[np.ndarray]:
     affiché pour que le tracé corresponde au masque."""
     contours, _ = cv2.findContours(mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     return list(contours)
+
+
+def hausdorff_distance_px(pred_mask: np.ndarray, gt_mask: np.ndarray) -> float | None:
+    """Distance de Hausdorff symétrique (en pixels) entre les contours du masque
+    prédit et de la vérité terrain : la pire distance entre un point du contour
+    d'un masque et le point le plus proche de l'autre contour. Contrairement au
+    Dice/IoU (qui mesurent le recouvrement global), elle est sensible à une seule
+    zone mal segmentée, même petite, ce qui la rend complémentaire pour évaluer
+    la qualité du contour tracé.
+
+    Calculée sur les contours (CHAIN_APPROX_NONE, tous les pixels de bord) plutôt
+    que sur tous les pixels du masque : même résultat, beaucoup moins de points.
+
+    Retourne None si l'un des deux masques est vide (distance non définie).
+    """
+    pred_contours = cv2.findContours(pred_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0]
+    gt_contours = cv2.findContours(gt_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0]
+    if not pred_contours or not gt_contours:
+        return None
+
+    pred_pts = np.vstack([c.reshape(-1, 2) for c in pred_contours])
+    gt_pts = np.vstack([c.reshape(-1, 2) for c in gt_contours])
+
+    return max(
+        directed_hausdorff(pred_pts, gt_pts)[0],
+        directed_hausdorff(gt_pts, pred_pts)[0],
+    )

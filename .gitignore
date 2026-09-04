@@ -12,8 +12,12 @@ data/images/
 data/masques/
 data/masks_binary/
 mlruns/
+mlflow.db
 
 chatbot/chroma_db/
 chatbot/chat_history.json
 
 .streamlit/secrets.toml
+
+# Config locale de l'outil Claude Code, pas du projet
+.claude/

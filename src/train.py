@@ -18,7 +18,7 @@ from model import build_model
 
 SPLITS_DIR = "data/splits"
 CKPT_DIR = "outputs/checkpoints"
-LOG_PATH = "outputs/training_log.csv"
+LOG_DIR = "outputs"
 MLFLOW_EXPERIMENT = "wound-segmentation"
 
 
@@ -95,11 +95,14 @@ def main():
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="max", factor=0.5, patience=5)
 
     os.makedirs(CKPT_DIR, exist_ok=True)
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+    os.makedirs(LOG_DIR, exist_ok=True)
 
     best_dice = -1.0
     epochs_without_improvement = 0
     best_ckpt_path = os.path.join(CKPT_DIR, f"{args.run_name}_best.pt")
+    # Per run_name, pas un chemin fixe : sinon deux runs différents (ex: un vrai
+    # entraînement et un smoke test) écrasent le même outputs/training_log.csv.
+    log_path = os.path.join(LOG_DIR, f"{args.run_name}_training_log.csv")
 
     mlflow.set_experiment(MLFLOW_EXPERIMENT)
     with mlflow.start_run(run_name=args.run_name):
@@ -108,7 +111,7 @@ def main():
         mlflow.log_param("train_size", len(train_ids))
         mlflow.log_param("val_size", len(val_ids))
 
-        with open(LOG_PATH, "w", newline="") as f:
+        with open(log_path, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["epoch", "train_loss", "train_iou", "train_dice", "val_loss", "val_iou", "val_dice", "lr", "encoder_frozen", "seconds"])
 
@@ -164,9 +167,9 @@ def main():
 
         mlflow.log_metric("best_val_dice", best_dice)
         mlflow.log_artifact(best_ckpt_path)
-        mlflow.log_artifact(LOG_PATH)
+        mlflow.log_artifact(log_path)
 
-    print(f"training done. best val dice: {best_dice:.4f}. log: {LOG_PATH}")
+    print(f"training done. best val dice: {best_dice:.4f}. log: {log_path}")
 
 
 if __name__ == "__main__":

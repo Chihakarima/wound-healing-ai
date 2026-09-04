@@ -14,8 +14,9 @@ COPY requirements.txt .
 # CUDA dependencies (~2GB) that a CPU-only container never uses. requirements.txt
 # also lists torch/torchvision unpinned, so the later install below is a no-op
 # for them and only installs the remaining packages.
-RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu \
-    && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --default-timeout=180 --retries 10 \
+        torch torchvision --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir --default-timeout=180 --retries 10 -r requirements.txt
 
 COPY . .
 
