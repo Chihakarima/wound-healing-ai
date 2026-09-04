@@ -1,0 +1,31 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      # ollama.Client() reads OLLAMA_HOST itself when no host is passed explicitly.
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+      - ./chatbot/chroma_db:/app/chatbot/chroma_db
+      - ./chatbot/chat_history.json:/app/chatbot/chat_history.json
+      - ./mlruns:/app/mlruns
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+volumes:
+  ollama_data:
+
+# Premier lancement : le modèle mistral n'est pas inclus dans l'image ollama/ollama,
+# il faut le récupérer une fois dans le conteneur :
+#   docker compose up -d
+#   docker compose exec ollama ollama pull mistral

@@ -1,0 +1,16 @@
+torch
+torchvision
+segmentation-models-pytorch
+albumentations
+opencv-python
+numpy
+matplotlib
+streamlit
+streamlit-drawable-canvas
+streamlit-image-coordinates
+pillow
+scipy
+requests
+chromadb
+ollama
+mlflow

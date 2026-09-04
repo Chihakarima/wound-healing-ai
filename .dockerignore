@@ -1,0 +1,15 @@
+__pycache__/
+**/__pycache__/
+*.pyc
+
+.git
+.claude
+
+# Bind-mounted at runtime instead of baked into the image (see docker-compose.yml)
+data/
+outputs/
+chatbot/chroma_db/
+chatbot/chat_history.json
+mlruns/
+
+.streamlit/secrets.toml

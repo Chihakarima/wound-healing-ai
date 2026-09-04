@@ -1,0 +1,93 @@
+device: cuda
+train: 77, val: 19
+epoch 001 | train loss 1.3726 iou 0.1546 dice 0.2677 | val loss 1.3513 iou 0.2654 dice 0.4194 | 4.2s
+  -> new best val dice 0.4194, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 002 | train loss 1.1567 iou 0.3542 dice 0.5231 | val loss 1.0858 iou 0.5253 dice 0.6888 | 3.9s
+  -> new best val dice 0.6888, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 003 | train loss 1.0406 iou 0.4934 dice 0.6608 | val loss 0.9569 iou 0.6497 dice 0.7876 | 3.8s
+  -> new best val dice 0.7876, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 004 | train loss 0.9273 iou 0.6226 dice 0.7674 | val loss 0.8545 iou 0.7454 dice 0.8541 | 3.8s
+  -> new best val dice 0.8541, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 005 | train loss 0.8657 iou 0.6542 dice 0.7910 | val loss 0.7668 iou 0.7497 dice 0.8570 | 3.8s
+  -> new best val dice 0.8570, saved to outputs/checkpoints\unet_resnet34_best.pt
+unfreezing encoder (fine-tuning full network)
+epoch 006 | train loss 0.8122 iou 0.6916 dice 0.8177 | val loss 0.7665 iou 0.7871 dice 0.8809 | 5.4s
+  -> new best val dice 0.8809, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 007 | train loss 0.8068 iou 0.7221 dice 0.8386 | val loss 0.7682 iou 0.7841 dice 0.8790 | 5.4s
+epoch 008 | train loss 0.7917 iou 0.7301 dice 0.8440 | val loss 0.7582 iou 0.7955 dice 0.8861 | 5.3s
+  -> new best val dice 0.8861, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 009 | train loss 0.7801 iou 0.7399 dice 0.8505 | val loss 0.7475 iou 0.8078 dice 0.8937 | 5.3s
+  -> new best val dice 0.8937, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 010 | train loss 0.7722 iou 0.7566 dice 0.8614 | val loss 0.7399 iou 0.8101 dice 0.8951 | 5.4s
+  -> new best val dice 0.8951, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 011 | train loss 0.7656 iou 0.7491 dice 0.8565 | val loss 0.7298 iou 0.8153 dice 0.8983 | 5.4s
+  -> new best val dice 0.8983, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 012 | train loss 0.7555 iou 0.7581 dice 0.8624 | val loss 0.7281 iou 0.8155 dice 0.8984 | 5.3s
+  -> new best val dice 0.8984, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 013 | train loss 0.7538 iou 0.7488 dice 0.8564 | val loss 0.7158 iou 0.8189 dice 0.9004 | 5.3s
+  -> new best val dice 0.9004, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 014 | train loss 0.7483 iou 0.7633 dice 0.8658 | val loss 0.7235 iou 0.8184 dice 0.9001 | 5.4s
+epoch 015 | train loss 0.7354 iou 0.7693 dice 0.8696 | val loss 0.7159 iou 0.8163 dice 0.8989 | 5.3s
+epoch 016 | train loss 0.7328 iou 0.7741 dice 0.8727 | val loss 0.7076 iou 0.8219 dice 0.9022 | 5.3s
+  -> new best val dice 0.9022, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 017 | train loss 0.7248 iou 0.7800 dice 0.8764 | val loss 0.7065 iou 0.8235 dice 0.9032 | 5.3s
+  -> new best val dice 0.9032, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 018 | train loss 0.7227 iou 0.7816 dice 0.8774 | val loss 0.7037 iou 0.8208 dice 0.9016 | 5.3s
+epoch 019 | train loss 0.7237 iou 0.7708 dice 0.8706 | val loss 0.6966 iou 0.8281 dice 0.9060 | 5.3s
+  -> new best val dice 0.9060, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 020 | train loss 0.7148 iou 0.7733 dice 0.8722 | val loss 0.6856 iou 0.8324 dice 0.9086 | 5.4s
+  -> new best val dice 0.9086, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 021 | train loss 0.7056 iou 0.7802 dice 0.8765 | val loss 0.6738 iou 0.8309 dice 0.9076 | 5.3s
+epoch 022 | train loss 0.6985 iou 0.7988 dice 0.8881 | val loss 0.6747 iou 0.8313 dice 0.9079 | 5.3s
+epoch 023 | train loss 0.6990 iou 0.7899 dice 0.8826 | val loss 0.6698 iou 0.8336 dice 0.9093 | 5.3s
+  -> new best val dice 0.9093, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 024 | train loss 0.6890 iou 0.8066 dice 0.8929 | val loss 0.6688 iou 0.8359 dice 0.9106 | 5.4s
+  -> new best val dice 0.9106, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 025 | train loss 0.6861 iou 0.7893 dice 0.8823 | val loss 0.6652 iou 0.8379 dice 0.9118 | 5.3s
+  -> new best val dice 0.9118, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 026 | train loss 0.6816 iou 0.7890 dice 0.8821 | val loss 0.6566 iou 0.8347 dice 0.9099 | 5.4s
+epoch 027 | train loss 0.6729 iou 0.8075 dice 0.8935 | val loss 0.6503 iou 0.8364 dice 0.9109 | 5.3s
+epoch 028 | train loss 0.6730 iou 0.7889 dice 0.8820 | val loss 0.6484 iou 0.8407 dice 0.9135 | 5.3s
+  -> new best val dice 0.9135, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 029 | train loss 0.6742 iou 0.7837 dice 0.8788 | val loss 0.6513 iou 0.8370 dice 0.9112 | 5.4s
+epoch 030 | train loss 0.6643 iou 0.7939 dice 0.8851 | val loss 0.6458 iou 0.8382 dice 0.9120 | 5.3s
+epoch 031 | train loss 0.6635 iou 0.8005 dice 0.8892 | val loss 0.6346 iou 0.8399 dice 0.9130 | 5.3s
+epoch 032 | train loss 0.6487 iou 0.8216 dice 0.9021 | val loss 0.6365 iou 0.8413 dice 0.9138 | 5.3s
+  -> new best val dice 0.9138, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 033 | train loss 0.6459 iou 0.8139 dice 0.8974 | val loss 0.6306 iou 0.8408 dice 0.9135 | 5.3s
+epoch 034 | train loss 0.6481 iou 0.8046 dice 0.8917 | val loss 0.6197 iou 0.8439 dice 0.9153 | 5.3s
+  -> new best val dice 0.9153, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 035 | train loss 0.6436 iou 0.8010 dice 0.8895 | val loss 0.6207 iou 0.8425 dice 0.9145 | 5.4s
+epoch 036 | train loss 0.6355 iou 0.8183 dice 0.9001 | val loss 0.6180 iou 0.8428 dice 0.9147 | 5.3s
+epoch 037 | train loss 0.6293 iou 0.8133 dice 0.8970 | val loss 0.6076 iou 0.8456 dice 0.9164 | 5.3s
+  -> new best val dice 0.9164, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 038 | train loss 0.6213 iou 0.8227 dice 0.9027 | val loss 0.6080 iou 0.8452 dice 0.9161 | 5.3s
+epoch 039 | train loss 0.6271 iou 0.8110 dice 0.8956 | val loss 0.6031 iou 0.8435 dice 0.9151 | 5.4s
+epoch 040 | train loss 0.6112 iou 0.8253 dice 0.9043 | val loss 0.6000 iou 0.8438 dice 0.9153 | 5.3s
+epoch 041 | train loss 0.6166 iou 0.8065 dice 0.8929 | val loss 0.6003 iou 0.8444 dice 0.9157 | 5.3s
+epoch 042 | train loss 0.6166 iou 0.8228 dice 0.9028 | val loss 0.5976 iou 0.8463 dice 0.9168 | 5.3s
+  -> new best val dice 0.9168, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 043 | train loss 0.6001 iou 0.8231 dice 0.9030 | val loss 0.5903 iou 0.8414 dice 0.9139 | 5.3s
+epoch 044 | train loss 0.6036 iou 0.8199 dice 0.9011 | val loss 0.5827 iou 0.8465 dice 0.9169 | 5.4s
+  -> new best val dice 0.9169, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 045 | train loss 0.5996 iou 0.8180 dice 0.8999 | val loss 0.5796 iou 0.8435 dice 0.9151 | 5.3s
+epoch 046 | train loss 0.6009 iou 0.8204 dice 0.9013 | val loss 0.5785 iou 0.8462 dice 0.9167 | 5.3s
+epoch 047 | train loss 0.5920 iou 0.8249 dice 0.9040 | val loss 0.5762 iou 0.8456 dice 0.9163 | 5.3s
+epoch 048 | train loss 0.5883 iou 0.8237 dice 0.9034 | val loss 0.5699 iou 0.8484 dice 0.9180 | 5.4s
+  -> new best val dice 0.9180, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 049 | train loss 0.5823 iou 0.8315 dice 0.9080 | val loss 0.5715 iou 0.8489 dice 0.9183 | 5.3s
+  -> new best val dice 0.9183, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 050 | train loss 0.5708 iou 0.8341 dice 0.9095 | val loss 0.5640 iou 0.8486 dice 0.9181 | 5.4s
+epoch 051 | train loss 0.5712 iou 0.8324 dice 0.9085 | val loss 0.5600 iou 0.8457 dice 0.9164 | 5.4s
+epoch 052 | train loss 0.5665 iou 0.8373 dice 0.9114 | val loss 0.5543 iou 0.8502 dice 0.9190 | 5.3s
+  -> new best val dice 0.9190, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 053 | train loss 0.5612 iou 0.8428 dice 0.9147 | val loss 0.5526 iou 0.8506 dice 0.9193 | 5.4s
+  -> new best val dice 0.9193, saved to outputs/checkpoints\unet_resnet34_best.pt
+epoch 054 | train loss 0.5585 iou 0.8450 dice 0.9160 | val loss 0.5526 iou 0.8501 dice 0.9190 | 5.3s
+epoch 055 | train loss 0.5571 iou 0.8396 dice 0.9128 | val loss 0.5535 iou 0.8464 dice 0.9168 | 5.4s
+epoch 056 | train loss 0.5629 iou 0.8215 dice 0.9020 | val loss 0.5519 iou 0.8455 dice 0.9163 | 5.4s
+epoch 057 | train loss 0.5568 iou 0.8240 dice 0.9035 | val loss 0.5404 iou 0.8476 dice 0.9175 | 5.4s
+epoch 058 | train loss 0.5480 iou 0.8398 dice 0.9129 | val loss 0.5353 iou 0.8505 dice 0.9192 | 5.3s
+epoch 059 | train loss 0.5426 iou 0.8361 dice 0.9107 | val loss 0.5370 iou 0.8450 dice 0.9160 | 5.3s
+epoch 060 | train loss 0.5527 iou 0.8219 dice 0.9022 | val loss 0.5316 iou 0.8467 dice 0.9170 | 5.4s
+training done. best val dice: 0.9193. log: outputs/training_log.csv

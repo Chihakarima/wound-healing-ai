@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Modèles, données et logs volumineux : à versionner avec DVC plus tard plutôt
+# que de les mettre directement dans git.
+outputs/checkpoints/
+outputs/predictions/
+outputs/qc_masks/
+outputs/kinetics/
+data/images/
+data/masques/
+data/masks_binary/
+mlruns/
+
+chatbot/chroma_db/
+chatbot/chat_history.json
+
+.streamlit/secrets.toml

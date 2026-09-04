@@ -1,0 +1,405 @@
+"""Assistant IA : répond aux questions du biologiste en confrontant le résultat
+de segmentation obtenu à la littérature scientifique sur la cicatrisation.
+
+Utilise un LLM local via Ollama (modèle mistral) pour ne dépendre d'aucune clé
+d'API externe, et index_articles.chercher() pour le contexte scientifique
+(retrieval-augmented generation).
+
+Usage:
+    python chatbot/chatbot.py
+"""
+import queue
+import sys
+import threading
+import time
+from pathlib import Path
+
+import ollama
+
+sys.path.insert(0, str(Path(__file__).parent))
+from index_articles import chercher
+
+MODEL = "mistral"
+
+# Délai max entre deux morceaux du flux avant d'abandonner (pas un délai sur la
+# durée totale) : observé en pratique, Ollama peut se bloquer en cours de
+# génération sans jamais renvoyer d'erreur ni de nouvel octet (probablement une
+# contention GPU quand une segmentation d'image PyTorch vient de tourner juste
+# avant dans la même session). Le timeout intégré au client HTTP d'ollama-python
+# ne suffit pas à détecter ça (testé : blocage de 180s+ sans qu'il se déclenche
+# pour un appel en streaming), donc la génération tourne dans un thread séparé
+# et ce module surveille lui-même, via une file, qu'un nouveau morceau arrive
+# bien avant CHUNK_TIMEOUT_S secondes.
+CHUNK_TIMEOUT_S = 45.0
+_client = ollama.Client()
+
+PROMPT_TEMPLATE = """Tu es un assistant scientifique qui aide un biologiste à interpréter un \
+résultat de segmentation automatique de plaie (wound healing assay).
+
+Résultat de segmentation obtenu par le biologiste :
+{resultat_segmentation}
+
+Question du biologiste :
+{question}
+
+Extraits d'articles scientifiques pertinents :
+{contexte}
+
+Consignes :
+- Réponds en français simple, clair, pour un biologiste non spécialiste en IA.
+- S'il y a un résultat de segmentation ci-dessus, compare-le à ce que dit la littérature.
+  S'il n'y en a pas (question générale, aucune image analysée), réponds à la question
+  en t'appuyant uniquement sur la littérature ci-dessus, sans réclamer de résultat.
+- Cite toujours le titre complet de l'article entre guillemets à chaque mention.
+  Ne dis jamais "le premier article" ou "le deuxième article" : ces numéros ne
+  correspondent à rien pour le lecteur et prêtent à confusion.
+- N'invente jamais de lien ni d'URL vers un article : les extraits ci-dessus n'en
+  fournissent pas, donc cite uniquement le titre entre guillemets, jamais de lien.
+- Si les extraits ne permettent pas de répondre, dis-le honnêtement plutôt que d'inventer.
+- Ne pose jamais de question de clarification en retour (pas de "pouvez-vous préciser...",
+  "quelle est la durée de l'expérience ?", etc.) : réponds directement avec le résultat de
+  segmentation et les extraits déjà fournis ci-dessus. S'il manque une information pour
+  répondre complètement, dis-le en une phrase et réponds quand même du mieux possible avec
+  ce qui est disponible, au lieu de renvoyer la question au biologiste.
+- Si le message n'est pas une vraie question scientifique (simple salutation comme "bonjour",
+  message vide de sens, faute de frappe, remerciement...), ne force pas une réponse basée sur
+  les extraits ci-dessus : réponds brièvement et simplement (ex: salue en retour, invite à
+  poser une question sur la cicatrisation), sans inventer de lien avec les articles.
+"""
+
+
+def _format_resultat(resultat_segmentation: dict | None) -> str:
+    if not resultat_segmentation:
+        return "(aucun : question générale, sans image analysée)"
+    return "\n".join(f"- {cle} : {valeur}" for cle, valeur in resultat_segmentation.items())
+
+
+def _format_contexte(articles: list[dict]) -> str:
+    return "\n\n".join(
+        f"[{a['titre']} ({a['annee']})]\n{a['extrait']}" for a in articles
+    )
+
+
+_ARRET = object()  # sentinelle : signale la fin normale du flux dans la file
+
+
+BATCH_INTERVAL_S = 0.5  # regroupe les morceaux reçus sur cette fenêtre avant de les afficher
+
+
+def _stream_ollama(prompt: str):
+    """Lance une génération Ollama en streaming ; lève RuntimeError immédiatement
+    si Ollama est injoignable (avant de renvoyer le générateur de morceaux).
+
+    La génération tourne dans un thread à part qui pousse chaque morceau dans une
+    file ; ce générateur lit la file avec un timeout et regroupe les morceaux reçus
+    sur BATCH_INTERVAL_S avant de les céder. Le regroupement est nécessaire : testé
+    en conditions réelles, céder un morceau à chaque token (observé : ~260 morceaux
+    sur ~60s) fait décrocher l'affichage st.write_stream côté navigateur en cours de
+    route (Streamlit cesse de transmettre les mises à jour) alors que la génération
+    elle-même se termine normalement côté serveur — un thread de debug l'a confirmé.
+
+    Si Ollama se bloque en cours de route (aucun nouveau morceau pendant plus de
+    CHUNK_TIMEOUT_S), on abandonne proprement avec un message d'avertissement ajouté
+    au texte déjà reçu, plutôt que de laisser l'appli figée indéfiniment. Le thread
+    bloqué est laissé mourir en arrière-plan (démon) : on n'attend pas qu'il se
+    débloque."""
+    try:
+        stream = _client.chat(model=MODEL, messages=[{"role": "user", "content": prompt}], stream=True)
+    except Exception as exc:
+        raise RuntimeError(
+            "Impossible de contacter Ollama. Vérifiez qu'Ollama est installé et lancé "
+            f"(ollama serve) et que le modèle est disponible (ollama pull {MODEL})."
+        ) from exc
+
+    file_morceaux = queue.Queue()
+
+    def producteur():
+        try:
+            for chunk in stream:
+                file_morceaux.put(chunk["message"]["content"])
+        except Exception:
+            pass
+        finally:
+            file_morceaux.put(_ARRET)
+
+    threading.Thread(target=producteur, daemon=True).start()
+
+    def morceaux():
+        # Sondage court (POLL_S) pour pouvoir vérifier régulièrement à la fois le
+        # délai depuis le dernier morceau reçu (détection de blocage, CHUNK_TIMEOUT_S)
+        # et le délai depuis le dernier envoi au navigateur (regroupement d'affichage,
+        # BATCH_INTERVAL_S) sans dépendre d'un seul timeout pour les deux.
+        POLL_S = 0.1
+        tampon = []
+        dernier_item = time.monotonic()
+        dernier_envoi = time.monotonic()
+
+        while True:
+            try:
+                item = file_morceaux.get(timeout=POLL_S)
+            except queue.Empty:
+                item = None
+
+            maintenant = time.monotonic()
+
+            if item is not None:
+                if item is _ARRET:
+                    if tampon:
+                        yield "".join(tampon)
+                    return
+                tampon.append(item)
+                dernier_item = maintenant
+
+            if maintenant - dernier_item > CHUNK_TIMEOUT_S:
+                if tampon:
+                    yield "".join(tampon)
+                yield (
+                    "\n\n⚠️ *Génération interrompue : le modèle local n'a pas répondu à temps "
+                    "(Ollama a peut-être été surchargé, par exemple juste après une analyse "
+                    "d'image). Réessayez.*"
+                )
+                return
+
+            if tampon and maintenant - dernier_envoi >= BATCH_INTERVAL_S:
+                yield "".join(tampon)
+                tampon = []
+                dernier_envoi = maintenant
+
+    return morceaux()
+
+
+LONGUEUR_MIN_QUESTION = 8  # en dessous, ce n'est pas une vraie question (salutation, faute de frappe...)
+
+REPONSE_SALUTATION = (
+    "Bonjour ! Posez-moi une question sur la cicatrisation ou sur un résultat de "
+    "segmentation (surface, vitesse de fermeture...) et je chercherai la littérature "
+    "scientifique pertinente pour vous répondre."
+)
+
+
+def _question_triviale(question: str) -> bool:
+    """Un message trop court pour être une vraie question (ex: "bnj", "ok") ne doit
+    pas déclencher toute la recherche RAG + génération : un petit modèle local comme
+    mistral 7B ne suit pas de façon fiable la consigne "ne force pas de réponse
+    scientifique à une salutation", donc ce filtre est fait en code plutôt qu'en
+    comptant sur le LLM."""
+    return len(question.strip()) < LONGUEUR_MIN_QUESTION
+
+
+def _construire_prompt(resultat_segmentation: dict | None, question: str, n_articles: int):
+    articles = chercher(question, n=n_articles)
+    prompt = PROMPT_TEMPLATE.format(
+        resultat_segmentation=_format_resultat(resultat_segmentation),
+        question=question,
+        contexte=_format_contexte(articles),
+    )
+    return prompt, articles
+
+
+def repondre(resultat_segmentation: dict | None, question: str, n_articles: int = 3) -> dict:
+    """Génère une réponse à la question du biologiste, appuyée sur la littérature.
+
+    resultat_segmentation: dict des métriques déjà calculées par l'app
+    (ex: {"surface_px2": 12450, "fermeture_pct": 42.0, "duree_h": 48}), ou None
+    pour une question générale sans image analysée.
+
+    Retourne {"reponse": str, "sources": [titres d'articles utilisés]}.
+    """
+    if _question_triviale(question):
+        return {"reponse": REPONSE_SALUTATION, "sources": []}
+
+    prompt, articles = _construire_prompt(resultat_segmentation, question, n_articles)
+
+    try:
+        response = _client.chat(model=MODEL, messages=[{"role": "user", "content": prompt}])
+    except Exception as exc:
+        raise RuntimeError(
+            "Impossible de contacter Ollama. Vérifiez qu'Ollama est installé et lancé "
+            f"(ollama serve) et que le modèle est disponible (ollama pull {MODEL})."
+        ) from exc
+
+    return {
+        "reponse": response["message"]["content"],
+        "sources": [a["titre"] for a in articles],
+    }
+
+
+def repondre_stream(resultat_segmentation: dict | None, question: str, n_articles: int = 3):
+    """Comme repondre(), mais renvoie la réponse morceau par morceau au lieu
+    d'attendre le texte complet : une réponse mistral en local prend 60-90s,
+    et un écran figé pendant tout ce temps donne l'impression que l'appli est
+    plantée. Affichée en direct (ex: st.write_stream côté app.py), la réponse
+    apparaît mot à mot dès les premières secondes, comme dans ChatGPT.
+
+    Retourne (générateur de morceaux de texte, sources). Lève RuntimeError
+    immédiatement si Ollama est injoignable (avant de renvoyer le générateur).
+    """
+    if _question_triviale(question):
+        return iter([REPONSE_SALUTATION]), []
+
+    prompt, articles = _construire_prompt(resultat_segmentation, question, n_articles)
+    return _stream_ollama(prompt), [a["titre"] for a in articles]
+
+
+PROMPT_RAPPORT = """Tu es un assistant scientifique qui aide un biologiste à rédiger un premier \
+résumé de son expérience de cicatrisation de plaie (wound healing / scratch assay), à partir de \
+mesures de surface obtenues automatiquement par segmentation d'image sur une série d'images prises \
+à différents temps.
+
+Synthèse chiffrée déjà calculée par le pipeline (valeurs finales à reprendre telles quelles dans \
+ta réponse ; ne recalcule et n'invente aucun de ces chiffres, ne les arrondis pas différemment) :
+{synthese}
+
+Vitesse de fermeture par intervalle, déjà calculée par le pipeline (sers-t'en pour dire si la \
+fermeture a accéléré ou ralenti au cours du temps, sans recalculer ces vitesses toi-même) :
+{intervalles}
+
+Détail des mesures par point de temps (pour décrire la tendance point par point uniquement) :
+{mesures}
+
+Extraits d'articles scientifiques pertinents sur la cicatrisation :
+{contexte}
+
+Rédige un court résumé scientifique (style section "Résultats" d'un article, 5 à 8 phrases, en \
+français) qui :
+- reprend exactement les valeurs de la synthèse chiffrée ci-dessus (surface initiale et finale,
+  fermeture finale en %, durée, vitesse moyenne en %/h) sans les recalculer ni en changer aucune,
+- indique, à partir des vitesses par intervalle ci-dessus, sur quelle période la fermeture a été
+  la plus rapide et sur quelle période elle a ralenti, sans te contenter de répéter les chiffres
+  déjà visibles dans le tableau du biologiste : explique ce que ça signifie pour la dynamique de
+  fermeture (ex: fermeture concentrée en début d'expérience puis ralentissement),
+- reste précis sur ce que les mesures permettent réellement de dire : les vitesses par intervalle
+  ci-dessus ne comparent que des intervalles entre eux (un intervalle plus rapide/plus lent qu'un
+  autre), donc ne parle jamais d'un intervalle qui "accélère" ou "ralentit" en son sein (ça
+  supposerait des mesures à l'intérieur de cet intervalle, qu'on n'a pas) ; dis plutôt par exemple
+  "la fermeture a été plus rapide entre 0h et 24h (0,47%/h) puis a ralenti entre 24h et 48h
+  (0,18%/h)", jamais "la fermeture a accéléré entre 0h et 24h",
+- ajoute si pertinent une phrase de mise en contexte par rapport à un ou deux articles de la
+  littérature ci-dessus, en citant leur titre complet entre guillemets (jamais "le premier article"),
+  sans jamais inventer de lien ni d'URL vers l'article (les extraits n'en fournissent pas),
+- reste factuel et concis, sans réclamer d'information supplémentaire au biologiste, et n'affirme
+  jamais une tendance qui contredirait les vitesses par intervalle fournies ci-dessus.
+"""
+
+
+def _format_mesures(rows: list[dict]) -> str:
+    lignes = []
+    for r in rows:
+        ligne = f"- T = {r['time_h']}h : {r['area_px2']} px²"
+        if "area_cm2" in r:
+            ligne += f" ({r['area_cm2']} cm²)"
+        ligne += f", fermeture {r['closure_pct']}% par rapport à T0"
+        lignes.append(ligne)
+    return "\n".join(lignes)
+
+
+def _calculer_synthese(rows: list[dict]) -> dict:
+    """Calcule les chiffres clés (surface initiale/finale, fermeture finale, durée,
+    vitesse moyenne) directement dans le code plutôt que de laisser le LLM les
+    déduire : un modèle local comme mistral 7B fait régulièrement des erreurs
+    arithmétiques sur ce type de calcul (constaté : fermeture et vitesse moyenne
+    erronées par rapport aux mesures fournies)."""
+    t0, t_final = rows[0], rows[-1]
+    duree_h = t_final["time_h"] - t0["time_h"]
+    fermeture_finale_pct = t_final["closure_pct"]
+    vitesse_moyenne_pct_h = round(fermeture_finale_pct / duree_h, 2) if duree_h > 0 else 0.0
+    return {
+        "t0": t0,
+        "t_final": t_final,
+        "duree_h": duree_h,
+        "fermeture_finale_pct": fermeture_finale_pct,
+        "vitesse_moyenne_pct_h": vitesse_moyenne_pct_h,
+    }
+
+
+def _format_synthese(synthese: dict) -> str:
+    t0, t_final = synthese["t0"], synthese["t_final"]
+
+    def _surface(r):
+        s = f"{r['area_px2']} px²"
+        if "area_cm2" in r:
+            s += f" ({r['area_cm2']} cm²)"
+        return s
+
+    return "\n".join([
+        f"- Surface initiale (T = {t0['time_h']}h) : {_surface(t0)}",
+        f"- Surface finale (T = {t_final['time_h']}h) : {_surface(t_final)}",
+        f"- Fermeture finale : {synthese['fermeture_finale_pct']}% par rapport à T0",
+        f"- Durée totale d'observation : {synthese['duree_h']}h",
+        f"- Vitesse moyenne de fermeture : {synthese['vitesse_moyenne_pct_h']}%/h",
+    ])
+
+
+def _calculer_intervalles(rows: list[dict]) -> list[dict]:
+    """Calcule la vitesse de fermeture entre chaque paire de points consécutifs.
+
+    Sans ça, dire "la fermeture a ralenti entre 24h et 48h" oblige le LLM à comparer
+    les points lui-même à partir des seules valeurs cumulées par rapport à T0, avec
+    le même risque d'erreur d'interprétation que pour les chiffres globaux (constaté
+    en pratique). En calculant la vitesse de chaque intervalle dans le code, le LLM
+    n'a plus qu'à la commenter, pas à la déduire."""
+    intervalles = []
+    for prev, curr in zip(rows, rows[1:]):
+        duree_h = curr["time_h"] - prev["time_h"]
+        delta_closure_pct = round(curr["closure_pct"] - prev["closure_pct"], 1)
+        vitesse_pct_h = round(delta_closure_pct / duree_h, 2) if duree_h > 0 else 0.0
+        intervalles.append({
+            "t_debut": prev["time_h"],
+            "t_fin": curr["time_h"],
+            "duree_h": duree_h,
+            "delta_closure_pct": delta_closure_pct,
+            "vitesse_pct_h": vitesse_pct_h,
+        })
+    return intervalles
+
+
+def _format_intervalles(intervalles: list[dict]) -> str:
+    if not intervalles:
+        return "(un seul point de mesure disponible : pas d'intervalle à comparer)"
+
+    lignes = [
+        f"- Entre {iv['t_debut']}h et {iv['t_fin']}h : fermeture +{iv['delta_closure_pct']} points "
+        f"de %, soit une vitesse de {iv['vitesse_pct_h']}%/h sur cet intervalle"
+        for iv in intervalles
+    ]
+    if len(intervalles) > 1:
+        plus_rapide = max(intervalles, key=lambda iv: iv["vitesse_pct_h"])
+        plus_lent = min(intervalles, key=lambda iv: iv["vitesse_pct_h"])
+        if plus_rapide is not plus_lent:
+            lignes.append(
+                f"- Intervalle le plus rapide : {plus_rapide['t_debut']}h-{plus_rapide['t_fin']}h "
+                f"({plus_rapide['vitesse_pct_h']}%/h) ; le plus lent : "
+                f"{plus_lent['t_debut']}h-{plus_lent['t_fin']}h ({plus_lent['vitesse_pct_h']}%/h)"
+            )
+    return "\n".join(lignes)
+
+
+def generer_resume_stream(rows: list[dict], n_articles: int = 3):
+    """Génère un résumé scientifique (style "Résultats") de l'évolution de la surface
+    de la plaie au cours du temps, appuyé sur la littérature, en streaming.
+
+    rows: sortie de kinetics.compute_kinetics_from_images (liste de dict avec au
+    moins time_h, area_px2, closure_pct, triée par temps croissant).
+
+    Retourne (générateur de morceaux de texte, sources).
+    """
+    requete_litterature = "wound healing scratch assay closure rate over time cell migration"
+    articles = chercher(requete_litterature, n=n_articles)
+
+    synthese = _calculer_synthese(rows)
+    intervalles = _calculer_intervalles(rows)
+    prompt = PROMPT_RAPPORT.format(
+        synthese=_format_synthese(synthese),
+        intervalles=_format_intervalles(intervalles),
+        mesures=_format_mesures(rows),
+        contexte=_format_contexte(articles),
+    )
+    return _stream_ollama(prompt), [a["titre"] for a in articles]
+
+
+if __name__ == "__main__":
+    resultat_test = {"surface_px2": 12450, "fermeture_pct": 42.0, "duree_h": 48}
+    question_test = "Cette vitesse de fermeture est-elle cohérente avec la littérature ?"
+    resultat = repondre(resultat_test, question_test)
+    print(resultat["reponse"])
+    print("\nSources :", ", ".join(resultat["sources"]))
