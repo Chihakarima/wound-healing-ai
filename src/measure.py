@@ -70,3 +70,20 @@ def hausdorff_distance_px(pred_mask: np.ndarray, gt_mask: np.ndarray) -> float |
         directed_hausdorff(pred_pts, gt_pts)[0],
         directed_hausdorff(gt_pts, pred_pts)[0],
     )
+
+
+def normalize_hausdorff(hausdorff_px: float, shape_hw: tuple[int, int]) -> float:
+    """Exprime une distance de Hausdorff (en pixels) en fraction de la diagonale
+    de l'image sur laquelle elle a été calculée.
+
+    Une distance en pixels bruts n'est comparable que si toutes les images
+    évaluées ont la même résolution : ici les images sources font des tailles
+    variées, et la baseline classique (src/baseline.py) travaille en résolution
+    native pendant que l'évaluation du U-Net (src/evaluate.py) travaille sur des
+    masques redimensionnés à img_size x img_size. Diviser par la diagonale rend
+    les deux comparables (fraction de la plus grande distance possible dans
+    l'image), au prix de perdre l'information de distance physique absolue.
+    """
+    h, w = shape_hw
+    diagonal = (h ** 2 + w ** 2) ** 0.5
+    return hausdorff_px / diagonal
