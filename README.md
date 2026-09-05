@@ -37,6 +37,20 @@ U-Net avec encodeur ResNet34 pré-entraîné ImageNet
 gelé 5 époques puis dégelé à LR/10), loss Dice+BCE, `ReduceLROnPlateau`, early
 stopping sur le Dice de validation, tracking MLflow. Voir [src/train.py](src/train.py).
 
+**Courbes d'apprentissage** (`outputs/figures/figure3_loss_curves.png`,
+`outputs/figures/figure4_dice_curves.png`, générées par
+[src/plot_training_curves.py](src/plot_training_curves.py)) : train vs validation
+uniquement — le jeu de test reste tenu à l'écart et n'est évalué qu'une seule fois
+(voir Évaluation ci-dessous), pas suivi époque par époque. Les deux courbes
+montrent une convergence régulière, sans signe de surapprentissage (le Dice de
+validation ne décroche pas du Dice de train). Le Dice de validation est
+au contraire *supérieur* à celui de train tout au long de l'entraînement : c'est
+attendu ici, car l'augmentation de données forte appliquée à l'entraînement
+(crop aléatoire, flips, bruit...) rend la tâche plus difficile à ce stade que la
+validation, qui ne fait qu'un simple redimensionnement — ce n'est pas un
+signal d'alerte. Le meilleur checkpoint (époque 54, Dice validation 0,923) est
+sélectionné sur ce critère, conformément à l'early stopping utilisé.
+
 ### Baseline classique (comparaison)
 
 Le gap n'est pas caractérisé par une couleur différente du reste du champ (même
@@ -155,7 +169,8 @@ python -m src.split_data                                          # (re)génère
 python -m src.train --run_name unet_resnet34_holdout               # entraînement
 python -m src.evaluate --run_name unet_resnet34_holdout --split test  # évaluation U-Net
 python -m src.baseline --split test                                 # évaluation baseline
-python -m src.error_analysis_figures                                 # figures du rapport
+python -m src.error_analysis_figures                                 # figures d'analyse d'erreur
+python -m src.plot_training_curves --run_name unet_resnet34_holdout  # courbes d'apprentissage
 ```
 
 Résultats bruts : `outputs/predictions/test_metrics.json`,
