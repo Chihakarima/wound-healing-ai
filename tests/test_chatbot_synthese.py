@@ -28,10 +28,11 @@ def test_synthese_reprend_les_valeurs_finales_sans_les_recalculer():
 
 
 def test_format_synthese_contient_les_bonnes_valeurs():
-    texte = _format_synthese(_calculer_synthese(ROWS))
+    texte = _format_synthese(_calculer_synthese(ROWS), n_mesures=len(ROWS))
     assert "8410" in texte
     assert "71.6%" in texte
     assert "1.49%/h" in texte
+    assert "3" in texte  # nombre de mesures rappelé pour éviter de sur-interpréter la tendance
 
 
 def test_intervalles_detectent_le_ralentissement():

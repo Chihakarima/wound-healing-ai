@@ -47,9 +47,19 @@ Extraits d'articles scientifiques pertinents :
 
 Consignes :
 - Réponds en français simple, clair, pour un biologiste non spécialiste en IA.
-- S'il y a un résultat de segmentation ci-dessus, compare-le à ce que dit la littérature.
-  S'il n'y en a pas (question générale, aucune image analysée), réponds à la question
-  en t'appuyant uniquement sur la littérature ci-dessus, sans réclamer de résultat.
+- S'il y a un résultat de segmentation ci-dessus, mets-le en perspective avec ce que
+  disent les extraits (mécanismes, méthodes, ordres de grandeur généraux). S'il n'y en
+  a pas (question générale, aucune image analysée), réponds à la question en
+  t'appuyant uniquement sur la littérature ci-dessus, sans réclamer de résultat.
+- N'affirme JAMAIS qu'un résultat est "conforme à la littérature", "en accord avec les
+  études", "un résultat normal" ou qu'il "confirme" quoi que ce soit scientifiquement,
+  sauf si un extrait ci-dessus décrit explicitement des conditions expérimentales
+  comparables (même type de test, échelle de temps comparable) ET une valeur chiffrée
+  directement comparable. C'est le cas le plus rare : les extraits sont en général des
+  résumés généraux (mécanismes, méthodes), pas des points de comparaison chiffrés pour
+  les conditions précises du biologiste. Par défaut, dis explicitement que les extraits
+  fournissent un contexte général mais ne permettent pas de conclure à une concordance
+  quantitative avec le résultat observé, plutôt que d'inventer un rapprochement.
 - Cite toujours le titre complet de l'article entre guillemets à chaque mention.
   Ne dis jamais "le premier article" ou "le deuxième article" : ces numéros ne
   correspondent à rien pour le lecteur et prêtent à confusion.
@@ -277,6 +287,15 @@ français) qui :
 - ajoute si pertinent une phrase de mise en contexte par rapport à un ou deux articles de la
   littérature ci-dessus, en citant leur titre complet entre guillemets (jamais "le premier article"),
   sans jamais inventer de lien ni d'URL vers l'article (les extraits n'en fournissent pas),
+- N'affirme JAMAIS que les mesures sont "conformes à la littérature", "en accord avec les études",
+  qu'il s'agit d'un "résultat normal", ou que les extraits "confirment" tes chiffres : les extraits
+  sont en général des résumés généraux (mécanismes, méthodes), pas des points de comparaison
+  chiffrés dans des conditions expérimentales comparables aux tiennes. Dis plutôt explicitement
+  que les extraits apportent un contexte général mais ne permettent pas de conclure à une
+  concordance quantitative avec les valeurs mesurées, sauf si un extrait décrit vraiment des
+  conditions et une valeur chiffrée directement comparables (cas rare),
+- rappelle en une phrase que ce résumé décrit une évolution globale sur un nombre de mesures
+  limité (voir "Nombre de mesures" dans la synthèse ci-dessus), pas une cinétique fine,
 - reste factuel et concis, sans réclamer d'information supplémentaire au biologiste, et n'affirme
   jamais une tendance qui contredirait les vitesses par intervalle fournies ci-dessus.
 """
@@ -312,7 +331,7 @@ def _calculer_synthese(rows: list[dict]) -> dict:
     }
 
 
-def _format_synthese(synthese: dict) -> str:
+def _format_synthese(synthese: dict, n_mesures: int) -> str:
     t0, t_final = synthese["t0"], synthese["t_final"]
 
     def _surface(r):
@@ -322,11 +341,13 @@ def _format_synthese(synthese: dict) -> str:
         return s
 
     return "\n".join([
+        f"- Nombre de mesures : {n_mesures} (décrit une évolution globale, pas une cinétique fine)",
         f"- Surface initiale (T = {t0['time_h']}h) : {_surface(t0)}",
         f"- Surface finale (T = {t_final['time_h']}h) : {_surface(t_final)}",
         f"- Fermeture finale : {synthese['fermeture_finale_pct']}% par rapport à T0",
         f"- Durée totale d'observation : {synthese['duree_h']}h",
-        f"- Vitesse moyenne de fermeture : {synthese['vitesse_moyenne_pct_h']}%/h",
+        f"- Taux moyen de fermeture sur la période observée : {synthese['vitesse_moyenne_pct_h']}%/h "
+        "(pas une vitesse instantanée)",
     ])
 
 
@@ -389,7 +410,7 @@ def generer_resume_stream(rows: list[dict], n_articles: int = 3):
     synthese = _calculer_synthese(rows)
     intervalles = _calculer_intervalles(rows)
     prompt = PROMPT_RAPPORT.format(
-        synthese=_format_synthese(synthese),
+        synthese=_format_synthese(synthese, n_mesures=len(rows)),
         intervalles=_format_intervalles(intervalles),
         mesures=_format_mesures(rows),
         contexte=_format_contexte(articles),

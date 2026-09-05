@@ -383,6 +383,12 @@ with tab_single:
             if pixels_per_cm > 0:
                 area_cm2 = area_px_to_cm2(area_px, pixels_per_cm)
                 c2.metric("Surface (cm²)", f"{area_cm2:.2f}")
+            else:
+                st.caption(
+                    "Les surfaces sont exprimées en pixels². Une calibration spatiale "
+                    "(ratio pixels/cm, réglage dans la barre latérale) est nécessaire "
+                    "pour obtenir une unité physique (cm², mm²...)."
+                )
 
         resultat_segmentation = {"image": image_file.name, "surface_px2": area_px}
         if pixels_per_cm > 0:
@@ -603,8 +609,19 @@ with tab_kinetics:
                       help="Par rapport à la surface de la plaie au premier temps de la série.")
             s2.metric("Durée observée", f"{duration_h:.0f} h",
                       help="Écart entre le premier et le dernier temps de la série.")
-            s3.metric("Vitesse moyenne", f"{avg_speed:.2f} %/h" if avg_speed is not None else "—",
-                      help="Fermeture finale divisée par la durée observée.")
+            s3.metric("Taux moyen de fermeture", f"{avg_speed:.2f} %/h" if avg_speed is not None else "—",
+                      help="Fermeture finale divisée par la durée observée : un taux moyen sur "
+                           "toute la période, pas une vitesse instantanée ni une valeur mesurée "
+                           "à chaque instant.")
+
+            temps_mesures = ", ".join(f"{row['time_h']:g}h" for row in rows)
+            st.caption(
+                f"Suivi basé sur {len(rows)} mesure(s) ({temps_mesures}). "
+                "Ces points permettent d'observer l'évolution globale de la fermeture, mais "
+                "ne suffisent pas à caractériser précisément la dynamique entre deux temps de "
+                "mesure (une accélération ou un ralentissement entre deux points ne serait pas "
+                "visible sans mesure intermédiaire)."
+            )
 
             column_labels = {
                 "time_h": "Temps (h)", "image": "Image", "area_px2": "Surface (px²)",
@@ -617,6 +634,12 @@ with tab_kinetics:
                 with st.container(border=True):
                     st.subheader("📋 Tableau des résultats")
                     st.dataframe(display_rows, use_container_width=True, hide_index=True)
+                    if not pixels_per_cm:
+                        st.caption(
+                            "Surfaces en pixels² : sans calibration spatiale (ratio pixels/cm), "
+                            "elles ne sont comparables qu'entre images de cette même série (même "
+                            "microscope, même grossissement), pas convertibles en unité physique."
+                        )
             with col_curve:
                 with st.container(border=True):
                     st.subheader("📈 Courbe de cicatrisation")
