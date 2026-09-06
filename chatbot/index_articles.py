@@ -30,7 +30,13 @@ def build_index():
     ids = [str(i) for i in range(len(articles))]
     documents = [f"{a['title']}. {a['abstract']}" for a in articles]
     metadatas = [
-        {"title": a["title"], "year": a.get("year") or 0, "abstract": a["abstract"]}
+        {
+            "title": a["title"],
+            "year": a.get("year") or 0,
+            "abstract": a["abstract"],
+            "category": a.get("category") or "non_categorise",
+            "topics": ",".join(a.get("topics", [])),
+        }
         for a in articles
     ]
 

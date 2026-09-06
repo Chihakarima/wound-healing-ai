@@ -260,8 +260,8 @@ Synthèse chiffrée déjà calculée par le pipeline (valeurs finales à reprend
 ta réponse ; ne recalcule et n'invente aucun de ces chiffres, ne les arrondis pas différemment) :
 {synthese}
 
-Vitesse de fermeture par intervalle, déjà calculée par le pipeline (sers-t'en pour dire si la \
-fermeture a accéléré ou ralenti au cours du temps, sans recalculer ces vitesses toi-même) :
+Vitesse de fermeture par intervalle, déjà calculée par le pipeline (sers-t'en pour comparer les \
+vitesses moyennes entre intervalles, sans recalculer ces vitesses toi-même) :
 {intervalles}
 
 Détail des mesures par point de temps (pour décrire la tendance point par point uniquement) :
@@ -274,16 +274,26 @@ Rédige un court résumé scientifique (style section "Résultats" d'un article,
 français) qui :
 - reprend exactement les valeurs de la synthèse chiffrée ci-dessus (surface initiale et finale,
   fermeture finale en %, durée, vitesse moyenne en %/h) sans les recalculer ni en changer aucune,
-- indique, à partir des vitesses par intervalle ci-dessus, sur quelle période la fermeture a été
-  la plus rapide et sur quelle période elle a ralenti, sans te contenter de répéter les chiffres
-  déjà visibles dans le tableau du biologiste : explique ce que ça signifie pour la dynamique de
-  fermeture (ex: fermeture concentrée en début d'expérience puis ralentissement),
+- indique, à partir des vitesses par intervalle ci-dessus, quel intervalle a le taux moyen le plus
+  élevé et lequel a le taux moyen le plus faible, sans te contenter de répéter les chiffres déjà
+  visibles dans le tableau du biologiste,
 - reste précis sur ce que les mesures permettent réellement de dire : les vitesses par intervalle
-  ci-dessus ne comparent que des intervalles entre eux (un intervalle plus rapide/plus lent qu'un
-  autre), donc ne parle jamais d'un intervalle qui "accélère" ou "ralentit" en son sein (ça
-  supposerait des mesures à l'intérieur de cet intervalle, qu'on n'a pas) ; dis plutôt par exemple
-  "la fermeture a été plus rapide entre 0h et 24h (0,47%/h) puis a ralenti entre 24h et 48h
-  (0,18%/h)", jamais "la fermeture a accéléré entre 0h et 24h",
+  ci-dessus ne comparent que des taux moyens entre intervalles (un intervalle dont le taux moyen
+  est plus élevé/plus faible qu'un autre), ça ne démontre ni ne mesure une accélération ou un
+  ralentissement biologique de la cicatrisation (ça supposerait des mesures à l'intérieur de
+  chaque intervalle, qu'on n'a pas) ; utilise le patron "le taux moyen de fermeture estimé sur
+  l'intervalle [T_debut]-[T_fin]h ([vitesse]%/h) est supérieur à celui estimé sur l'intervalle
+  [T_debut]-[T_fin]h ([vitesse]%/h). Cette différence décrit uniquement les mesures disponibles et
+  ne permet pas, à elle seule, de conclure à une accélération biologique de la cicatrisation."
+  EN REPRENANT LES BORNES ET VITESSES EXACTES DE LA SECTION "Vitesse de fermeture par intervalle"
+  CI-DESSUS, jamais des valeurs numériques différentes ; n'écris JAMAIS les mots "accélération",
+  "accéléré", "ralentissement" ou "ralenti" au sujet de la cicatrisation elle-même (seulement au
+  sujet du taux moyen mesuré, en suivant strictement le patron ci-dessus), et n'écris jamais que
+  "la plaie cicatrise plus vite/plus lentement",
+- IMPORTANT : chaque vitesse en %/h que tu écris doit être copiée mot pour mot depuis la section
+  "Vitesse de fermeture par intervalle" ci-dessus (ou depuis la synthèse chiffrée pour la vitesse
+  moyenne). N'écris JAMAIS une vitesse en %/h qui ne soit pas recopiée telle quelle depuis ces deux
+  sections : ce sont les deux seuls endroits de ce prompt qui font autorité sur les vitesses,
 - ajoute si pertinent une phrase de mise en contexte par rapport à un ou deux articles de la
   littérature ci-dessus, en citant leur titre complet entre guillemets (jamais "le premier article"),
   sans jamais inventer de lien ni d'URL vers l'article (les extraits n'en fournissent pas),
@@ -297,7 +307,11 @@ français) qui :
 - rappelle en une phrase que ce résumé décrit une évolution globale sur un nombre de mesures
   limité (voir "Nombre de mesures" dans la synthèse ci-dessus), pas une cinétique fine,
 - reste factuel et concis, sans réclamer d'information supplémentaire au biologiste, et n'affirme
-  jamais une tendance qui contredirait les vitesses par intervalle fournies ci-dessus.
+  jamais une tendance qui contredirait les vitesses par intervalle fournies ci-dessus,
+- n'affirme jamais que "le biologiste a effectué l'expérience" ou toute variante supposant qui a
+  réalisé la manipulation (l'application ne le sait pas) : décris plutôt les mesures elles-mêmes,
+  par exemple "les mesures analysées proviennent d'un essai de type scratch assay" ou "l'analyse
+  des images issues d'un scratch assay montre une diminution de la surface non colonisée".
 """
 
 
