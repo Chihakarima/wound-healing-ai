@@ -162,12 +162,12 @@ Couverture actuelle :
 - ✅ Principes et limites du scratch assay (3)
 - ✅ Automatisation et analyse d'image (10)
 - ⚠️ Deep learning / segmentation biomédicale : **0 article** — les requêtes Semantic
-  Scholar ciblées ont échoué (429 persistant sur l'API publique, sans clé). C'est la
-  lacune la plus gênante puisque le modèle du projet est justement un U-Net, à combler
-  en priorité (nouvelle tentative de récupération, ou clé API dédiée).
-- ⚠️ Métriques d'évaluation (Dice/IoU/Hausdorff) : 1 seul article — lacune jugée moins
-  urgente, ces métriques étant calculées et validées directement par le code
-  ([src/metrics.py](src/metrics.py)), pas par le LLM.
+  Scholar ciblées ont échoué (429 persistant sur l'API publique, sans clé, 3 tentatives).
+  Voir Perspectives ci-dessous.
+- ⚠️ Métriques d'évaluation (Dice/IoU/Hausdorff) : 1 seul article, pour la même raison —
+  lacune jugée moins urgente que la précédente, ces métriques étant de toute façon
+  calculées et validées directement par le code ([src/metrics.py](src/metrics.py)), pas
+  par le LLM.
 - ❌ Applications biologiques (traitements/molécules) retirées volontairement : elles
   parlent de cicatrisation via l'effet d'une molécule précise, pas du mécanisme de
   cicatrisation/migration ni de la méthode de mesure elle-même — hors du cœur du projet.
@@ -212,6 +212,20 @@ pas des manques à corriger dans l'immédiat.
 - Le Hausdorff normalisé du U-Net est élevé (0,323) mais l'expérience TTA ci-dessus
   (section Résultats) confirme l'hypothèse : ce sont des artefacts de contour isolés
   (lissés par le TTA, sans changer le Dice), pas un problème de recouvrement global.
+
+## Perspectives
+
+- **Base documentaire du RAG** : les catégories deep learning/segmentation et métriques
+  restent sous-couvertes (voir ci-dessus) parce que l'API publique Semantic Scholar est
+  saturée sans clé (429 persistant sur 3 tentatives), pas par manque d'articles pertinents
+  disponibles. Solution identifiée et prête à appliquer : une clé API Semantic Scholar
+  gratuite lève cette limite de débit — `chatbot/fetch_articles_by_category.py` n'a besoin
+  d'aucune autre modification pour en profiter. Non appliqué pour l'instant : c'est un
+  enrichissement périphérique du RAG, pas une correction du cœur du projet (segmentation,
+  évaluation, baseline), et le RAG reste fonctionnel et honnête sur cette limite en l'état.
+- **Hyperparameter tuning** : un seul run MLflow tracé à ce jour (voir Ingénierie) ; tester
+  d'autres encodeurs/`img_size`/learning rates permettrait de savoir si `unet_resnet34_holdout`
+  est déjà un optimum local ou s'il reste de la marge.
 
 ## Reproduire les résultats
 
