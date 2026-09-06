@@ -212,6 +212,10 @@ pas des manques à corriger dans l'immédiat.
 - Le Hausdorff normalisé du U-Net est élevé (0,323) mais l'expérience TTA ci-dessus
   (section Résultats) confirme l'hypothèse : ce sont des artefacts de contour isolés
   (lissés par le TTA, sans changer le Dice), pas un problème de recouvrement global.
+- **Reproductibilité expérimentale** : un seul run d'entraînement a été réalisé à ce
+  stade (`unet_resnet34_holdout`) ; la variance des performances liée à l'initialisation
+  et au split n'est donc pas estimée, et le résultat pourrait en partie dépendre d'un
+  split favorable plutôt que refléter uniquement la qualité du modèle.
 
 ## Perspectives
 
@@ -226,6 +230,12 @@ pas des manques à corriger dans l'immédiat.
 - **Hyperparameter tuning** : un seul run MLflow tracé à ce jour (voir Ingénierie) ; tester
   d'autres encodeurs/`img_size`/learning rates permettrait de savoir si `unet_resnet34_holdout`
   est déjà un optimum local ou s'il reste de la marge.
+- **Plusieurs seeds** : répéter l'entraînement avec plusieurs seeds (même configuration,
+  split différent à chaque fois) et rapporter Dice = moyenne ± écart-type permettrait de
+  vérifier que le résultat actuel n'est pas dû à un split particulièrement favorable.
+- **Comparaison architecturale** : comparer U-Net/ResNet34 à une autre architecture de
+  segmentation légère permettrait de savoir si le gain observé face à la baseline vient
+  du deep learning en général ou spécifiquement de cette configuration.
 
 ## Reproduire les résultats
 
