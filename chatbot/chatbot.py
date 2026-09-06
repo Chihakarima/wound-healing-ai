@@ -85,8 +85,12 @@ def _format_resultat(resultat_segmentation: dict | None) -> str:
 
 
 def _format_contexte(articles: list[dict]) -> str:
+    # Pas de crochets autour du titre : un modèle comme mistral a tendance à
+    # recopier ce gabarit tel quel comme "citation", au lieu de suivre la
+    # consigne de citer le titre entre guillemets dans sa réponse.
     return "\n\n".join(
-        f"[{a['titre']} ({a['annee']})]\n{a['extrait']}" for a in articles
+        f"Titre : {a['titre']}\nAnnée : {a['annee']}\nExtrait : {a['extrait']}"
+        for a in articles
     )
 
 
@@ -339,13 +343,22 @@ taux moyens entre intervalles peut être mentionnée (jamais qu'un taux "accél�
 """
 
 
+def _fr(nombre: float) -> str:
+    """Formate un nombre avec une virgule décimale (convention française), plutôt
+    que le point par défaut de Python (ex: 0.0h -> 0h, 1.58 -> 1,58) : ce texte
+    est injecté tel quel dans les réponses du chatbot, en français."""
+    if float(nombre) == int(nombre):
+        return str(int(nombre))
+    return str(nombre).replace(".", ",")
+
+
 def _format_mesures(rows: list[dict]) -> str:
     lignes = []
     for r in rows:
-        ligne = f"- T = {r['time_h']}h : {r['area_px2']} px²"
+        ligne = f"- T = {_fr(r['time_h'])}h : {r['area_px2']} px²"
         if "area_cm2" in r:
-            ligne += f" ({r['area_cm2']} cm²)"
-        ligne += f", fermeture {r['closure_pct']}% par rapport à T0"
+            ligne += f" ({_fr(r['area_cm2'])} cm²)"
+        ligne += f", fermeture {_fr(r['closure_pct'])}% par rapport à T0"
         lignes.append(ligne)
     return "\n".join(lignes)
 
@@ -375,16 +388,16 @@ def _format_synthese(synthese: dict, n_mesures: int) -> str:
     def _surface(r):
         s = f"{r['area_px2']} px²"
         if "area_cm2" in r:
-            s += f" ({r['area_cm2']} cm²)"
+            s += f" ({_fr(r['area_cm2'])} cm²)"
         return s
 
     return "\n".join([
         f"- Nombre de mesures : {n_mesures} (décrit une évolution globale, pas une cinétique fine)",
-        f"- Surface initiale (T = {t0['time_h']}h) : {_surface(t0)}",
-        f"- Surface finale (T = {t_final['time_h']}h) : {_surface(t_final)}",
-        f"- Fermeture finale : {synthese['fermeture_finale_pct']}% par rapport à T0",
-        f"- Durée totale d'observation : {synthese['duree_h']}h",
-        f"- Taux moyen de fermeture sur la période observée : {synthese['vitesse_moyenne_pct_h']}%/h "
+        f"- Surface initiale (T = {_fr(t0['time_h'])}h) : {_surface(t0)}",
+        f"- Surface finale (T = {_fr(t_final['time_h'])}h) : {_surface(t_final)}",
+        f"- Fermeture finale : {_fr(synthese['fermeture_finale_pct'])}% par rapport à T0",
+        f"- Durée totale d'observation : {_fr(synthese['duree_h'])}h",
+        f"- Taux moyen de fermeture sur la période observée : {_fr(synthese['vitesse_moyenne_pct_h'])}%/h "
         "(pas une vitesse instantanée)",
     ])
 
@@ -417,8 +430,8 @@ def _format_intervalles(intervalles: list[dict]) -> str:
         return "(un seul point de mesure disponible : pas d'intervalle à comparer)"
 
     lignes = [
-        f"- Entre {iv['t_debut']}h et {iv['t_fin']}h : fermeture +{iv['delta_closure_pct']} points "
-        f"de %, soit une vitesse de {iv['vitesse_pct_h']}%/h sur cet intervalle"
+        f"- Entre {_fr(iv['t_debut'])}h et {_fr(iv['t_fin'])}h : fermeture +{_fr(iv['delta_closure_pct'])} "
+        f"points de %, soit une vitesse de {_fr(iv['vitesse_pct_h'])}%/h sur cet intervalle"
         for iv in intervalles
     ]
     if len(intervalles) > 1:
@@ -426,9 +439,9 @@ def _format_intervalles(intervalles: list[dict]) -> str:
         plus_lent = min(intervalles, key=lambda iv: iv["vitesse_pct_h"])
         if plus_rapide is not plus_lent:
             lignes.append(
-                f"- Intervalle le plus rapide : {plus_rapide['t_debut']}h-{plus_rapide['t_fin']}h "
-                f"({plus_rapide['vitesse_pct_h']}%/h) ; le plus lent : "
-                f"{plus_lent['t_debut']}h-{plus_lent['t_fin']}h ({plus_lent['vitesse_pct_h']}%/h)"
+                f"- Intervalle le plus rapide : {_fr(plus_rapide['t_debut'])}h-{_fr(plus_rapide['t_fin'])}h "
+                f"({_fr(plus_rapide['vitesse_pct_h'])}%/h) ; le plus lent : "
+                f"{_fr(plus_lent['t_debut'])}h-{_fr(plus_lent['t_fin'])}h ({_fr(plus_lent['vitesse_pct_h'])}%/h)"
             )
     return "\n".join(lignes)
 
