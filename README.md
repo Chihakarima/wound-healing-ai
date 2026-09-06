@@ -152,10 +152,10 @@ connue et mesurable sur les plaies quasi refermées, partagée par les deux mét
 
 ### Base documentaire du RAG
 
-18 articles sélectionnés manuellement (`chatbot/articles_cicatrisation.json`), et non
+14 articles sélectionnés manuellement (`chatbot/articles_cicatrisation.json`), et non
 100 articles récupérés automatiquement sans tri : chaque candidat a été examiné (titre +
 résumé) et retenu ou rejeté selon sa pertinence réelle pour le projet, avec la décision et
-la raison tracées dans [`chatbot/curation_log.csv`](chatbot/curation_log.csv) (90 lignes).
+la raison tracées dans [`chatbot/curation_log.csv`](chatbot/curation_log.csv).
 Chaque article retenu porte une `category` (voir `chatbot/index_articles.py`).
 
 Couverture actuelle :
@@ -168,8 +168,9 @@ Couverture actuelle :
 - ⚠️ Métriques d'évaluation (Dice/IoU/Hausdorff) : 1 seul article — lacune jugée moins
   urgente, ces métriques étant calculées et validées directement par le code
   ([src/metrics.py](src/metrics.py)), pas par le LLM.
-- ✅ Applications biologiques (traitements/molécules), noyau réduit à 4 pour ne pas
-  dominer une base dont le cœur est la méthode, pas les résultats biologiques.
+- ❌ Applications biologiques (traitements/molécules) retirées volontairement : elles
+  parlent de cicatrisation via l'effet d'une molécule précise, pas du mécanisme de
+  cicatrisation/migration ni de la méthode de mesure elle-même — hors du cœur du projet.
 
 ## Ingénierie
 

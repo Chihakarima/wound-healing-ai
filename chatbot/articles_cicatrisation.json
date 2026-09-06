@@ -162,49 +162,5 @@
       "evaluation",
       "quantification"
     ]
-  },
-  {
-    "title": "Trehalose promotes wound healing in vitro by enhancing the migration of human keratinocytes via the VEGF/JNK/PI3K pathway",
-    "abstract": "Background Trehalose is a naturally occurring disaccharide found in invertebrates but cannot be synthesized by vertebrates. We previously reported that high-concentration trehalose induces a transient senescent-like state in fibroblasts, leading to cell cycle arrest and growth factor secretion via CDKN1A/p21, and this process promoted keratinocyte proliferation, enhancing capillary formation and wound closure in vivo. Objective This study aimed to investigate the effect of trehalose on human keratinocytes. Methods Previously published RNA-seq data of cytokine-untreated samples from our group of trehalose-treated human keratinocytes were re-analyzed, and an in vitro scratch assay was performed using cells treated with mitomycin C. Results The trehalose-treated group exhibited increased wound closure. A significantly increased secretion of vascular endothelial growth factor (VEGF) was observed in keratinocytes treated with high-concentration trehalose, which is one of the most crucial molecules inducing angiogenesis in the skin. Significant upregulation of mRNA level and protein secretion of VEGF was confirmed using qPCR and ELISA, respectively. Furthermore, treatment with axitinib, a VEGF receptor inhibitor, significantly suppressed trehalose-induced activation of keratinocyte migration. Additionally, the increase in trehalose-induced migration activity was significantly inhibited by the Jun N-terminal kinase (JNK) inhibitor SP600125 and the PI3K inhibitor LY294002. Conclusion Trehalose promotes wound healing via VEGF secretion from keratinocytes and the PI3K and JNK pathways. The findings of this study may lead to the development of novel therapeutic agents that can alter the wound healing process. IMPORTANT Manuscripts submitted to Review Commons are peer reviewed in a journal-agnostic way. Upon transfer of the peer reviewed preprint to a journal, the referee reports will be available in full to the handling editor. The identity of the referees will NOT be communicated to the authors unless the reviewers choose to sign their report. The identity of the referee will be confidentially disclosed to any affiliate journals to which the manuscript is transferred. GUIDELINES For reviewers: https://www.reviewcommons.org/reviewers For authors: https://www.reviewcommons.org/authors CONTACT The Review Commons office can be contacted directly at: office@reviewcommons.org",
-    "year": 2025,
-    "category": "biological_application",
-    "topics": [
-      "scratch_assay",
-      "application_biologique",
-      "traitement"
-    ]
-  },
-  {
-    "title": "Polyethylene Glycol Loxenatide Accelerates Diabetic Wound Healing by Downregulating Systemic Inflammation and Improving Endothelial Progenitor Cell Functions",
-    "abstract": "Diabetes wound healing presents several significant challenges, which can complicate recovery and lead to severe consequences. Polyethylene glycol loxenatide (PEG-loxe), a long-acting glucagon-like peptide-1 receptor agonist (GLP-1RA), shows cardiovascular benefits, yet its role in diabetic wound healing remains unclear. Diabetic mice received PEG-loxe (0.03 mg/kg/week, i.p.) for three months. Glucose metabolism was evaluated using the insulin tolerance test (ITT) and oral glucose tolerance test (OGTT). Wound closure rates and angiogenesis-related proteins were analyzed. Serum proteomics was performed using the Olink assay to evaluate systemic inflammation. In vitro, human endothelial progenitor cells (EPCs) were exposed to high glucose and palmitic acid, with or without PEG-loxe treatment. EPC tube formation and migratory capacity were evaluated using the tube formation assay and migration assay, respectively. Levels of nitric oxide (NO) and phosphorylated endothelial nitric oxide synthase (p-eNOS) were quantified. Mitochondrial reactive oxygen species (ROS) production and mitochondrial membrane potential were assessed using MitoSOX and JC-1 staining. Cellular respiratory function was analyzed via the Seahorse XF assay. Autophagy was evaluated by examining the expression of autophagy-related proteins and the colocalization of mitochondria with lysosomes. PEG-loxe improved glucose tolerance, accelerated wound closure, and upregulated the hypoxia-inducible factor-1α/vascular endothelial growth factor/stromal cell-derived factor-1 axis (HIF-1α/VEGF/SDF-1) in diabetic mice. Serum proteomics revealed reduced pro-inflammatory markers and elevated anti-inflammatory IL-5. In vitro, PEG-loxe restored EPC function by enhancing NO production, reducing mitochondrial ROS, improving cellular respiratory function, and restoring autophagic flux. These findings suggest that PEG-loxe offers therapeutic benefits for diabetic wound healing by downregulating systemic inflammation, enhancing angiogenesis, and improving mitochondrial quality control in EPCs, highlighting GLP-1RAs as potential therapies for diabetic vascular complications.",
-    "year": 2025,
-    "category": "biological_application",
-    "topics": [
-      "scratch_assay",
-      "application_biologique",
-      "traitement"
-    ]
-  },
-  {
-    "title": "Exosomes from human induced pluripotent stem cells-derived keratinocytes accelerate burn wound healing through miR-762 mediated promotion of keratinocytes and endothelial cells migration",
-    "abstract": "Background The use of keratinocytes derived from induced pluripotent stem cells (iPSCs-KCs) may represent a novel cell therapy strategy for burn treatment. There is growing evidence that extracellular vesicles, including exosomes, are primary mediators of the benefits of stem cell therapy. Herein, we thus explored the effects of exosomes produced by iPSCs-derived keratinocytes (iPSCs-KCs-Exos) in a model of deep second-degree burn wound healing and evaluated the mechanistic basis for the observed activity. Methods iPSCs-KCs-Exos were isolated from conditioned medium of iPSCs-KCs and verified by electron micrograph and size distribution. Next, iPSCs-KCs-Exos were injected subcutaneously around wound sites, and its efficacy was evaluated by measuring wound closure areas, histological examination, and immunohistochemistry staining. The effects of iPSCs-KCs-Exos on proliferation and migration of keratinocytes and endothelial cells in vitro were assessed by EdU staining, wound healing assays, and transwell assay. Then, high-throughput microRNA sequencing was used to explore the underlying mechanisms. We assessed the roles of miR-762 in iPSCs-KCs-Exos-induced regulation of keratinocytes and endothelial cells migration. Furthermore, the target gene which mediated the biological effects of miR-762 in keratinocytes and endothelial cells was also been detected. Results The analysis revealed that iPSCs-KCs-Exos application to the burn wound drove the acceleration of wound closure, with more robust angiogenesis and re-epithelialization being evident. Such iPSCs-KCs-Exos treatment effectively enhanced endothelial cell and keratinocyte migration i n vitro. Moreover, the enrichment of miR-762 was detected in iPSCs-KCs-Exos and was found to target promyelocytic leukemia (PML) as a means of regulating cell migration through a mechanism tie to integrin beta1 (ITGB1). Conclusion These results thus provide a foundation for the further study of iPSCs-KCs-Exos as novel cell-free treatments for deep second-degree burns. Graphical Abstract",
-    "year": 2022,
-    "category": "biological_application",
-    "topics": [
-      "scratch_assay",
-      "application_biologique",
-      "traitement"
-    ]
-  },
-  {
-    "title": "PDGF-AA loaded photo-crosslinked chitosan-based hydrogel for promoting wound healing.",
-    "abstract": "Chitosan-based hydrogels are considered to be ideal materials for promoting wound healing due to their nontoxic, biodegradable, and biocompatible properties. However, the weak mechanical strength, hemostatic properties, and adhesive properties of chitosan hydrogels limit their potential applications. In this study, we synthesized methacrylimide-chitosan (MAC)-4-arm polyethylene glycol (PEG)-dopamine (DMA) (MAC-PEG-DMA) hybrid hydrogels containing A-chain homodimers of platelet-derived growth factor (PDGF-AA) through one-pot photo-crosslinking. The resulting hydrogel exhibited improved mechanical strength and hemostatic properties as demonstrated by both in vitro blood clotting assay and rat liver hemorrhage assay. Furthermore, The PDGF-AA loaded hydrogel was also able to accelerate cell migration and proliferation. Data from skin wounds treated with this hybrid hydrogel showed faster wound closure and collagen maturation. Therefore, MAC-PEG-DMA (PDGF-AA) has great potential as a dressing to promote wound healing.",
-    "year": 2023,
-    "category": "biological_application",
-    "topics": [
-      "scratch_assay",
-      "application_biologique",
-      "traitement"
-    ]
   }
 ]

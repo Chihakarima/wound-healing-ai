@@ -44,14 +44,9 @@ TITRES_A_GARDER = {
         "automated_analysis",
     "Migratory Metrics of Wound Healing: A Quantification Approach for in vitro Scratch Assays":
         "metrics_evaluation",
-    "Trehalose promotes wound healing in vitro by enhancing the migration of human keratinocytes via the VEGF/JNK/PI3K pathway":
-        "biological_application",
-    "PDGF-AA loaded photo-crosslinked chitosan-based hydrogel for promoting wound healing.":
-        "biological_application",
-    "Polyethylene Glycol Loxenatide Accelerates Diabetic Wound Healing by Downregulating Systemic Inflammation and Improving Endothelial Progenitor Cell Functions":
-        "biological_application",
-    "Exosomes from human induced pluripotent stem cells-derived keratinocytes accelerate burn wound healing through miR-762 mediated promotion of keratinocytes and endothelial cells migration":
-        "biological_application",
+    # biological_application (études d'effet d'une molécule/traitement précis) retirée sur
+    # demande explicite : ces articles parlent de cicatrisation via l'effet d'un traitement,
+    # pas du mécanisme de cicatrisation/migration ou de la méthode de mesure elle-même.
 }
 
 # Titres récupérés par fetch_articles_by_category.py jugés hors sujet après relecture
@@ -77,7 +72,7 @@ CIBLES = {
     "automated_analysis": 10,
     "deep_learning_segmentation": 0,
     "metrics_evaluation": 1,
-    "biological_application": 4,
+    "biological_application": 0,
 }
 
 
