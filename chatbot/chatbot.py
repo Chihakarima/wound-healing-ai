@@ -270,48 +270,72 @@ Détail des mesures par point de temps (pour décrire la tendance point par poin
 Extraits d'articles scientifiques pertinents sur la cicatrisation :
 {contexte}
 
-Rédige un court résumé scientifique (style section "Résultats" d'un article, 5 à 8 phrases, en \
-français) qui :
-- reprend exactement les valeurs de la synthèse chiffrée ci-dessus (surface initiale et finale,
-  fermeture finale en %, durée, vitesse moyenne en %/h) sans les recalculer ni en changer aucune,
-- indique, à partir des vitesses par intervalle ci-dessus, quel intervalle a le taux moyen le plus
-  élevé et lequel a le taux moyen le plus faible, sans te contenter de répéter les chiffres déjà
-  visibles dans le tableau du biologiste,
-- reste précis sur ce que les mesures permettent réellement de dire : les vitesses par intervalle
-  ci-dessus ne comparent que des taux moyens entre intervalles (un intervalle dont le taux moyen
-  est plus élevé/plus faible qu'un autre), ça ne démontre ni ne mesure une accélération ou un
-  ralentissement biologique de la cicatrisation (ça supposerait des mesures à l'intérieur de
-  chaque intervalle, qu'on n'a pas) ; utilise le patron "le taux moyen de fermeture estimé sur
-  l'intervalle [T_debut]-[T_fin]h ([vitesse]%/h) est supérieur à celui estimé sur l'intervalle
-  [T_debut]-[T_fin]h ([vitesse]%/h). Cette différence décrit uniquement les mesures disponibles et
-  ne permet pas, à elle seule, de conclure à une accélération biologique de la cicatrisation."
-  EN REPRENANT LES BORNES ET VITESSES EXACTES DE LA SECTION "Vitesse de fermeture par intervalle"
-  CI-DESSUS, jamais des valeurs numériques différentes ; n'écris JAMAIS les mots "accélération",
-  "accéléré", "ralentissement" ou "ralenti" au sujet de la cicatrisation elle-même (seulement au
-  sujet du taux moyen mesuré, en suivant strictement le patron ci-dessus), et n'écris jamais que
-  "la plaie cicatrise plus vite/plus lentement",
+Rédige un résumé scientifique structuré EN EXACTEMENT 4 sections, avec ces 4 titres en gras et \
+dans cet ordre (rien avant, rien après, aucune section fusionnée ni omise) — chaque section ne \
+doit contenir QUE le type d'information indiqué, pour que le biologiste distingue toujours ce qui \
+est mesuré, ce qui est calculé, ce qui reste prudent, et ce qui vient de la littérature :
+
+**Résultats observés**
+- 1 à 2 phrases, UNIQUEMENT les valeurs mesurées telles quelles : surface initiale et finale,
+  fermeture finale en %, durée totale d'observation. Reprends-les exactement depuis la synthèse
+  chiffrée ci-dessus, sans les recalculer ni en changer aucune. Aucune interprétation ici.
+- n'affirme jamais que "le biologiste a effectué l'expérience" ou toute variante supposant qui a
+  réalisé la manipulation (l'application ne le sait pas) : décris les mesures elles-mêmes, par
+  exemple "les mesures analysées proviennent d'un essai de type scratch assay" ou "l'analyse des
+  images issues d'un scratch assay montre une diminution de la surface non colonisée".
+
+**Analyse quantitative**
+- 1 à 2 phrases sur la vitesse moyenne de fermeture (depuis la synthèse chiffrée) et sur quel
+  intervalle a le taux moyen le plus élevé / le plus faible (depuis les vitesses par intervalle
+  ci-dessus), sans te contenter de répéter les chiffres déjà visibles dans le tableau du biologiste.
 - IMPORTANT : chaque vitesse en %/h que tu écris doit être copiée mot pour mot depuis la section
   "Vitesse de fermeture par intervalle" ci-dessus (ou depuis la synthèse chiffrée pour la vitesse
-  moyenne). N'écris JAMAIS une vitesse en %/h qui ne soit pas recopiée telle quelle depuis ces deux
-  sections : ce sont les deux seuls endroits de ce prompt qui font autorité sur les vitesses,
-- ajoute si pertinent une phrase de mise en contexte par rapport à un ou deux articles de la
-  littérature ci-dessus, en citant leur titre complet entre guillemets (jamais "le premier article"),
-  sans jamais inventer de lien ni d'URL vers l'article (les extraits n'en fournissent pas),
-- N'affirme JAMAIS que les mesures sont "conformes à la littérature", "en accord avec les études",
-  qu'il s'agit d'un "résultat normal", ou que les extraits "confirment" tes chiffres : les extraits
-  sont en général des résumés généraux (mécanismes, méthodes), pas des points de comparaison
-  chiffrés dans des conditions expérimentales comparables aux tiennes. Dis plutôt explicitement
-  que les extraits apportent un contexte général mais ne permettent pas de conclure à une
-  concordance quantitative avec les valeurs mesurées, sauf si un extrait décrit vraiment des
-  conditions et une valeur chiffrée directement comparables (cas rare),
+  moyenne) : ce sont les deux seuls endroits de ce prompt qui font autorité sur les vitesses.
+  N'écris jamais une vitesse qui ne soit pas recopiée telle quelle depuis ces deux sections.
+- Reste un calcul, pas une interprétation biologique : ne parle pas encore ici d'accélération,
+  de ralentissement, ni de ce que ça signifie pour la cicatrisation (voir section suivante).
+
+**Interprétation prudente**
+- Explique ce que ce calcul permet réellement de dire : les vitesses par intervalle ne comparent
+  que des taux moyens entre intervalles (un intervalle dont le taux moyen est plus élevé/plus
+  faible qu'un autre), ça ne démontre ni ne mesure une accélération ou un ralentissement
+  biologique de la cicatrisation (ça supposerait des mesures à l'intérieur de chaque intervalle,
+  qu'on n'a pas) ; utilise le patron "le taux moyen de fermeture estimé sur l'intervalle
+  [T_debut]-[T_fin]h ([vitesse]%/h) est supérieur à celui estimé sur l'intervalle [T_debut]-[T_fin]h
+  ([vitesse]%/h). Cette différence décrit uniquement les mesures disponibles et ne permet pas, à
+  elle seule, de conclure à une accélération biologique de la cicatrisation." EN REPRENANT LES
+  BORNES ET VITESSES EXACTES DE LA SECTION "Vitesse de fermeture par intervalle" CI-DESSUS, jamais
+  des valeurs numériques différentes ; n'écris JAMAIS les mots "accélération", "accéléré",
+  "ralentissement" ou "ralenti" au sujet de la cicatrisation elle-même, et n'écris jamais que "la
+  plaie cicatrise plus vite/plus lentement",
 - rappelle en une phrase que ce résumé décrit une évolution globale sur un nombre de mesures
   limité (voir "Nombre de mesures" dans la synthèse ci-dessus), pas une cinétique fine,
-- reste factuel et concis, sans réclamer d'information supplémentaire au biologiste, et n'affirme
-  jamais une tendance qui contredirait les vitesses par intervalle fournies ci-dessus,
-- n'affirme jamais que "le biologiste a effectué l'expérience" ou toute variante supposant qui a
-  réalisé la manipulation (l'application ne le sait pas) : décris plutôt les mesures elles-mêmes,
-  par exemple "les mesures analysées proviennent d'un essai de type scratch assay" ou "l'analyse
-  des images issues d'un scratch assay montre une diminution de la surface non colonisée".
+- n'affirme jamais une tendance qui contredirait les vitesses par intervalle fournies ci-dessus.
+
+**Mise en contexte scientifique**
+- Si et seulement si un ou plusieurs extraits ci-dessus apportent un éclairage pertinent, cite
+  leur titre complet entre guillemets (jamais "le premier article") et résume ce qu'ils apportent
+  comme contexte général (mécanismes, méthodes) — jamais de lien ni d'URL (les extraits n'en
+  fournissent pas). N'affirme JAMAIS que les mesures sont "conformes à la littérature", "en accord
+  avec les études", qu'il s'agit d'un "résultat normal", ou que les extraits "confirment" tes
+  chiffres : les extraits sont en général des résumés généraux, pas des points de comparaison
+  chiffrés dans des conditions expérimentales comparables aux tiennes. Dis explicitement que les
+  extraits apportent un contexte général mais ne permettent pas de conclure à une concordance
+  quantitative avec les valeurs mesurées, sauf si un extrait décrit vraiment des conditions et une
+  valeur chiffrée directement comparables (cas rare).
+- IMPORTANT : si aucun extrait ci-dessus n'apporte d'éclairage réellement pertinent pour cette
+  expérience précise, écris-le explicitement (ex : "le corpus documentaire disponible ne permet
+  pas de mettre ces résultats en contexte de façon pertinente ici") plutôt que de forcer un lien
+  approximatif avec un article qui ne correspond pas, et plutôt que de compléter avec des
+  connaissances supposées non présentes dans les extraits ci-dessus.
+
+Reste factuel et concis (5 à 8 phrases au total sur les 4 sections), sans réclamer d'information
+supplémentaire au biologiste.
+
+RÈGLE GLOBALE VALABLE DANS LES 4 SECTIONS CI-DESSUS, PAS SEULEMENT DANS "Interprétation prudente" \
+: n'écris JAMAIS les mots "accélération", "accéléré", "ralentissement" ou "ralenti" au sujet de la \
+cicatrisation ou de sa vitesse, y compris dans "Analyse quantitative" où seule une différence de \
+taux moyens entre intervalles peut être mentionnée (jamais qu'un taux "accélère" ou "ralentit").
 """
 
 
