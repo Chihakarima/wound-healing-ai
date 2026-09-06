@@ -59,13 +59,17 @@ def main():
                               "sélection du checkpoint (contrairement à 'val'), donc seul son "
                               "score est une vraie estimation de généralisation.")
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument("--tta", action="store_true",
+                         help="Test-Time Augmentation : moyenne les probabilités sur 4 flips "
+                              "avant seuillage (voir src/predict.py). ~4x plus lent.")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model, img_size = load_model(args.run_name, device)
 
+    suffix = "_tta" if args.tta else ""
     ids = load_ids(os.path.join(SPLITS_DIR, f"{args.split}.txt"))
-    out_dir = os.path.join(PRED_DIR, f"{args.split}_comparisons")
+    out_dir = os.path.join(PRED_DIR, f"{args.split}_comparisons{suffix}")
     os.makedirs(out_dir, exist_ok=True)
 
     dices, ious, precisions, recalls = [], [], [], []
@@ -82,7 +86,7 @@ def main():
         image_bgr, gt_mask = image_bgr[:h, :w], gt_mask[:h, :w]
         gt_mask = (gt_mask > 127).astype(np.uint8)
 
-        pred_mask = predict_mask(model, image_bgr, img_size, device, threshold=args.threshold)
+        pred_mask = predict_mask(model, image_bgr, img_size, device, threshold=args.threshold, tta=args.tta)
 
         pred_t = torch.from_numpy(pred_mask.astype(bool)).unsqueeze(0)
         gt_t = torch.from_numpy(gt_mask.astype(bool)).unsqueeze(0)
@@ -140,9 +144,10 @@ def main():
           f"RMSE={rmse_area_px:.0f} px², erreur relative moyenne={mean_area_error_pct:.1f}%")
     print(f"Visuels de comparaison -> {out_dir}")
 
-    with open(os.path.join(PRED_DIR, f"{args.split}_metrics.json"), "w", encoding="utf-8") as f:
+    with open(os.path.join(PRED_DIR, f"{args.split}_metrics{suffix}.json"), "w", encoding="utf-8") as f:
         json.dump({
             "split": args.split,
+            "tta": args.tta,
             "resolution": "native",
             "mean_dice": float(np.mean(dices)), "std_dice": float(np.std(dices)),
             "mean_iou": float(np.mean(ious)), "std_iou": float(np.std(ious)),

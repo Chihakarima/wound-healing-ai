@@ -34,8 +34,24 @@ def load_model(run_name: str, device: torch.device):
     return model, checkpoint["img_size"]
 
 
-def predict_mask(model, image_bgr: np.ndarray, img_size: int, device: torch.device, threshold: float = 0.5) -> np.ndarray:
-    """Retourne un masque binaire (0/1) à la résolution originale de l'image."""
+def _predict_probs(model, image_t: torch.Tensor) -> torch.Tensor:
+    with torch.no_grad():
+        return torch.sigmoid(model(image_t))
+
+
+# Flips exactement inversibles (aucune interpolation, contrairement à une rotation) : chaque
+# variante est reflippée à l'identique avant de moyenner les probabilités. () = identité.
+_TTA_FLIPS = [(), (2,), (3,), (2, 3)]
+
+
+def predict_mask(model, image_bgr: np.ndarray, img_size: int, device: torch.device,
+                  threshold: float = 0.5, tta: bool = False) -> np.ndarray:
+    """Retourne un masque binaire (0/1) à la résolution originale de l'image.
+
+    tta=True : moyenne les probabilités sur 4 versions retournées de l'image (flips
+    horizontal/vertical/180°, exactement inversibles) avant de seuiller, au lieu d'une seule
+    passe avant. ~4x plus lent ; à valider par comparaison du Dice avec/sans sur le split test
+    (src/evaluate.py --tta) avant d'en faire le comportement par défaut."""
     h0, w0 = image_bgr.shape[:2]
     image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
 
@@ -46,11 +62,19 @@ def predict_mask(model, image_bgr: np.ndarray, img_size: int, device: torch.devi
     ])
     image_t = transform(image=image_rgb)["image"].unsqueeze(0).to(device)
 
-    with torch.no_grad():
-        logits = model(image_t)
-        probs = torch.sigmoid(logits)
-        pred = (probs > threshold).float().squeeze().cpu().numpy()
+    if tta:
+        probs_sum = None
+        for dims in _TTA_FLIPS:
+            variant = torch.flip(image_t, dims=dims) if dims else image_t
+            probs = _predict_probs(model, variant)
+            if dims:
+                probs = torch.flip(probs, dims=dims)
+            probs_sum = probs if probs_sum is None else probs_sum + probs
+        probs = probs_sum / len(_TTA_FLIPS)
+    else:
+        probs = _predict_probs(model, image_t)
 
+    pred = (probs > threshold).float().squeeze().cpu().numpy()
     pred_full = cv2.resize(pred, (w0, h0), interpolation=cv2.INTER_NEAREST)
     return (pred_full > 0.5).astype(np.uint8)
 

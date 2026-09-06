@@ -96,6 +96,17 @@ extrémités sont les points les plus instables à localiser précisément pour 
 deux méthodes). Recouvrement (Dice/IoU/precision/recall) et erreur de surface
 restent les métriques les plus pertinentes pour l'objectif du projet.
 
+**Piste testée pour ce Hausdorff élevé — Test-Time Augmentation (TTA)** : moyenner les
+probabilités prédites sur 4 versions retournées de l'image (flips horizontal/vertical/180°,
+exactement inversibles) avant seuillage
+(`python -m src.evaluate --run_name unet_resnet34_holdout --split test --tta`, voir
+[src/predict.py](src/predict.py)) fait chuter le Hausdorff normalisé de 0,323 à **0,043**
+(Dice quasi inchangé : 0,882 → 0,886 ; erreur de surface légèrement dégradée : 15,9 % → 16,9 %).
+Ça confirme l'hypothèse ci-dessus : le Hausdorff élevé venait d'artefacts de contour isolés aux
+extrémités de la plaie, lissés par le TTA, pas d'un problème de recouvrement global. Gardé
+**opt-in** (pas le comportement par défaut de l'app ni des figures ci-dessous) : ~4x plus lent par
+image, et l'objectif du projet reste le recouvrement/la surface plutôt que le Hausdorff.
+
 ## Analyse d'erreur
 
 **Figure 1** (`outputs/figures/figure1_exemples.png`) — quatre cas représentatifs
@@ -139,13 +150,53 @@ connue et mesurable sur les plaies quasi refermées, partagée par les deux mét
    résultats de segmentation à la littérature scientifique (articles Semantic
    Scholar), historique de conversations persistant.
 
+### Base documentaire du RAG
+
+18 articles sélectionnés manuellement (`chatbot/articles_cicatrisation.json`), et non
+100 articles récupérés automatiquement sans tri : chaque candidat a été examiné (titre +
+résumé) et retenu ou rejeté selon sa pertinence réelle pour le projet, avec la décision et
+la raison tracées dans [`chatbot/curation_log.csv`](chatbot/curation_log.csv) (90 lignes).
+Chaque article retenu porte une `category` (voir `chatbot/index_articles.py`).
+
+Couverture actuelle :
+- ✅ Principes et limites du scratch assay (3)
+- ✅ Automatisation et analyse d'image (10)
+- ⚠️ Deep learning / segmentation biomédicale : **0 article** — les requêtes Semantic
+  Scholar ciblées ont échoué (429 persistant sur l'API publique, sans clé). C'est la
+  lacune la plus gênante puisque le modèle du projet est justement un U-Net, à combler
+  en priorité (nouvelle tentative de récupération, ou clé API dédiée).
+- ⚠️ Métriques d'évaluation (Dice/IoU/Hausdorff) : 1 seul article — lacune jugée moins
+  urgente, ces métriques étant calculées et validées directement par le code
+  ([src/metrics.py](src/metrics.py)), pas par le LLM.
+- ✅ Applications biologiques (traitements/molécules), noyau réduit à 4 pour ne pas
+  dominer une base dont le cœur est la méthode, pas les résultats biologiques.
+
 ## Ingénierie
 
 - **Docker** : image CPU-only (wheels torch CPU explicites), `docker-compose.yml`
   avec service Ollama séparé.
-- **CI** (GitHub Actions) : tests pytest + build Docker sur push/PR vers `main`.
-- **MLflow** : tracking des runs d'entraînement (`mlruns/`).
+- **CI** (GitHub Actions) : tests pytest + build Docker sur push/PR vers `main`. C'est
+  de l'intégration continue (le code et l'image restent valides), pas du
+  déploiement continu : aucune publication ni déploiement automatisé.
+- **MLflow** : tracking des runs d'entraînement (backend SQLite `mlflow.db`,
+  artefacts dans `mlruns/`) — hyperparamètres, métriques par époque, checkpoint et
+  log CSV sauvegardés comme artefacts pour chaque run.
+
+  | Run | Encodeur | img_size | Époques | Train/Val | Meilleur Dice (val) |
+  |---|---|---:|---:|---|---:|
+  | `unet_resnet34_holdout` | resnet34 | 384 | 60 | 68 / 14 | 0,923 |
+
+  Un seul run est tracé à ce jour (celui utilisé pour tous les résultats de ce
+  README) ; le tableau est amené à s'étoffer si d'autres configurations sont
+  testées.
 - **Tests** (`tests/`) : mesures, métriques, synthèse chatbot.
+
+### Ce qui n'est volontairement pas fait
+
+Pas de versioning des données/checkpoints volumineux (`.gitignore` les exclut,
+en attendant un outil dédié type DVC), pas de registre de modèles, pas de
+déploiement automatisé. Cohérent avec l'échelle du projet — limites connues,
+pas des manques à corriger dans l'immédiat.
 
 ## Limites connues
 
@@ -157,10 +208,9 @@ connue et mesurable sur les plaies quasi refermées, partagée par les deux mét
   compromis global.
 - Performances dégradées sur les plaies quasi refermées (< ~3 % du champ) —
   voir analyse d'erreur ci-dessus.
-- Le Hausdorff normalisé du U-Net n'a pas encore d'explication définitive (voir
-  section Résultats) ; une investigation plus poussée (ex : Hausdorff calculé
-  séparément sur chaque extrémité de la bande vs sur son corps) pourrait la
-  confirmer.
+- Le Hausdorff normalisé du U-Net est élevé (0,323) mais l'expérience TTA ci-dessus
+  (section Résultats) confirme l'hypothèse : ce sont des artefacts de contour isolés
+  (lissés par le TTA, sans changer le Dice), pas un problème de recouvrement global.
 
 ## Reproduire les résultats
 
@@ -168,12 +218,14 @@ connue et mesurable sur les plaies quasi refermées, partagée par les deux mét
 python -m src.split_data                                          # (re)génère les splits
 python -m src.train --run_name unet_resnet34_holdout               # entraînement
 python -m src.evaluate --run_name unet_resnet34_holdout --split test  # évaluation U-Net
+python -m src.evaluate --run_name unet_resnet34_holdout --split test --tta  # idem + TTA (voir Résultats)
 python -m src.baseline --split test                                 # évaluation baseline
 python -m src.error_analysis_figures                                 # figures d'analyse d'erreur
 python -m src.plot_training_curves --run_name unet_resnet34_holdout  # courbes d'apprentissage
 ```
 
 Résultats bruts : `outputs/predictions/test_metrics.json`,
+`outputs/predictions/test_metrics_tta.json`,
 `outputs/predictions/test_baseline_metrics.json`,
-`outputs/predictions/test_comparisons/`, `outputs/predictions/test_baseline_comparisons/`,
-`outputs/figures/`.
+`outputs/predictions/test_comparisons/`, `outputs/predictions/test_comparisons_tta/`,
+`outputs/predictions/test_baseline_comparisons/`, `outputs/figures/`.
