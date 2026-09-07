@@ -233,6 +233,10 @@ st.caption(
     "Détection automatique de la plaie par intelligence artificielle (U-Net) : "
     "masque, contour, surface, et suivi de la cicatrisation dans le temps."
 )
+st.caption(
+    "⚠️ Outil de quantification d'image pour la recherche in vitro (scratch assay), "
+    "pas un outil d'aide au diagnostic médical ni un dispositif clinique."
+)
 
 with st.sidebar:
     st.header("⚙️ Paramètres")
@@ -705,6 +709,11 @@ with tab_kinetics:
                     "cicatrisation (RAG local via ChromaDB) et répond via un modèle Ollama "
                     "(mistral). Conversation valable pour cette analyse uniquement (non "
                     "conservée d'une session à l'autre)."
+                )
+                st.caption(
+                    "⚠️ Met en contexte un résultat de recherche in vitro à la lumière de la "
+                    "littérature scientifique — ne fournit ni diagnostic ni recommandation "
+                    "médicale."
                 )
 
                 st.session_state.setdefault("kinetics_chat_messages", [])

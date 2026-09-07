@@ -13,6 +13,19 @@ subjectif) par une mesure automatique reproductible, tout en évaluant sérieuse
 si le gain en précision/temps justifie l'usage du deep learning par rapport à une
 méthode classique de traitement d'image.
 
+## Portée et limites d'usage
+
+Ce projet est un **outil de quantification d'image** (surface de plaie, % de
+fermeture, cinétique) pour la recherche in vitro (scratch assay), pas un outil
+d'aide au diagnostic médical ni un dispositif clinique. Le modèle est entraîné et
+évalué sur des images de scratch assay d'un seul jeu de données/microscope (voir
+Limites connues) ; il ne doit pas être utilisé pour évaluer une plaie humaine réelle
+ni pour une décision de soin. L'assistant IA (RAG, voir plus bas) met un résultat de
+segmentation en regard de la littérature scientifique sur la cicatrisation in vitro
+et signale explicitement quand un rapprochement n'est pas justifié — il ne fournit
+ni diagnostic ni recommandation thérapeutique, et ses réponses doivent être lues comme
+un contexte scientifique, pas un avis médical.
+
 ## Données
 
 - 97 images de microscopie (scratch assay), chacune annotée manuellement par un
@@ -129,6 +142,29 @@ chance lié au split. Le Hausdorff normalisé, en revanche, varie énormément s
 sur-interprété comme un score de qualité stable — sa valeur dépend fortement de détails
 d'initialisation qui affectent surtout les extrémités de contour, pas du recouvrement global
 (cohérent avec l'hypothèse et l'expérience TTA ci-dessus).
+
+### Significativité statistique (U-Net vs baseline)
+
+Le tableau de résultats ci-dessus montre un écart de moyennes important (Dice 0,882 vs 0,576),
+mais une moyenne seule ne dit pas si cet écart pourrait s'expliquer par le hasard
+d'échantillonnage sur seulement 14 images. [src/statistical_comparison.py](src/statistical_comparison.py)
+complète les métriques déjà calculées par un test des rangs signés de Wilcoxon (non paramétrique,
+adapté à un petit échantillon) sur les paires (U-Net, baseline) de chaque image de test, et un
+intervalle de confiance bootstrap sur la différence moyenne :
+
+| Métrique | Moyenne U-Net | Moyenne baseline | Diff. moyenne | U-Net meilleur sur | p (Wilcoxon) | IC bootstrap 95 % de la diff. |
+|---|---:|---:|---:|---:|---:|---:|
+| Dice | 0,882 | 0,576 | +0,307 | 14/14 images | 0,000122 | [+0,183 ; +0,448] |
+| IoU | 0,796 | 0,448 | +0,348 | 14/14 images | 0,000122 | [+0,236 ; +0,470] |
+
+**Lecture :** le U-Net obtient un Dice et un IoU supérieurs sur les 14 images de test, sans
+exception — c'est la configuration la plus favorable possible pour un test des rangs signés à
+n=14, d'où le p le plus petit que ce test puisse produire à cette taille d'échantillon (0,000122,
+donc largement < 0,05). L'écart n'est donc pas un artefact d'échantillonnage sur ces 14 images :
+la supériorité du U-Net est statistiquement significative sur ce jeu de test, avec la réserve
+habituelle qu'un échantillon de 14 images reste petit pour l'intervalle de confiance
+(voir Dataset assez petit dans Limites connues) — un p très faible confirme la cohérence de
+l'effet sur cet échantillon, pas sa généralisation à d'autres données.
 
 ## Analyse d'erreur
 
@@ -251,6 +287,55 @@ biologiste (ex : "Mon Dice de 0,882 est-il faible comparé à d'autres études U
 scratch assay ?" ne remonte pas l'article de comparaison directe pourtant présent dans le
 corpus).
 
+**Évaluation reproductible de la récupération** :
+[chatbot/evaluate_retrieval.py](chatbot/evaluate_retrieval.py) transforme cette observation
+ponctuelle (2 questions) en un petit benchmark reproductible de 10 questions représentatives,
+chacune associée au(x) titre(s) d'article jugé(s) pertinent(s) par relecture manuelle (comme le
+reste de la curation du corpus). Pour chaque question : rang du premier article attendu dans les
+résultats (`None` si absent du top 10), et si l'article ressort dans le top 3 (`n_articles=3`,
+la profondeur utilisée en production par `chatbot.py`). Résultat sur le corpus actuel :
+
+- **Recall@3 : 60 % (6/10)** — **MRR@10 : 0,514**
+- La question de comparaison directe Dice/U-Net échoue **dans les deux langues** avec cette
+  formulation (l'article "An automated in vitro wound healing microscopy image analysis approach
+  utilizing U-net-based deep learning methodology" n'apparaît dans le top 10 ni en anglais ni en
+  français) : ça nuance l'anecdote ci-dessus — la limite n'est pas seulement un écart de langue,
+  elle dépend aussi fortement du vocabulaire et de la formulation précise de la question, y
+  compris en anglais.
+- La question sur les limites du scratch assay retrouve l'article attendu au rang 7 : présent
+  dans le corpus et retrouvable avec une recherche plus large, mais hors du top 3 utilisé par
+  défaut par le chatbot.
+- La question de cinétique (analyse temporelle) échoue entièrement, cohérent avec le fait déjà
+  noté ci-dessus que cette catégorie est la plus difficile à couvrir.
+
+Résultat détaillé par question : `chatbot/retrieval_eval_results.json` (régénéré par
+`python -m chatbot.evaluate_retrieval`). Sur un si petit nombre de questions, ces chiffres servent
+à objectiver une tendance déjà repérée qualitativement, pas à certifier un taux de succès général
+du retrieval.
+
+**Expérience de reformulation (la formulation, pas seulement la langue, est le vrai levier)** :
+pour les 4 questions qui échouaient ci-dessus, `chatbot/evaluate_retrieval.py` teste une
+reformulation à intention identique mais au vocabulaire plus technique/biomédical (repris des
+résumés d'articles ciblés, ex : "Dice similarity coefficient" plutôt que "Dice score"), dans la
+même langue que l'originale, pour isoler l'effet du vocabulaire de celui de la langue :
+
+| Question | Rang original | Rang reformulé | Dans le top 3 ? |
+|---|---:|---:|---|
+| Comparaison Dice/U-Net (EN) | absent (> 10) | **1** | ✅ (était ❌) |
+| Comparaison Dice/U-Net (FR) | absent (> 10) | 8 | ❌ (toujours hors top 3) |
+| Limites du scratch assay (EN) | 7 | **2** | ✅ (était ❌) |
+| Cinétique / points de mesure (FR) | absent (> 10) | 4 | ❌ (proche, toujours hors top 3) |
+
+**Recall@3 sur ces 4 questions : 0 % → 50 % après reformulation.** Deux cas s'améliorent nettement
+avec une formulation plus technique en gardant la même langue (le levier n'est donc pas seulement
+la traduction) ; les deux autres (les deux en français) progressent aussi (absent du top 10 →
+rang 8 et 4) mais restent hors du top 3 utilisé en production — cohérent avec l'hypothèse d'un
+écart de vocabulaire qui se cumule ici avec un écart de langue, sans qu'un seul des deux facteurs
+suffise à l'expliquer entièrement. Résultat : la reformulation ciblée est une piste réelle et peu
+coûteuse (aucun changement de code, juste la question posée), mais ne résout pas seule le cas
+français le plus difficile — cohérent avec les pistes déjà notées en Perspectives (embedding
+multilingue, recherche hybride).
+
 **Expérimentation contrôlée réalisée sur cette limite (résultat négatif informatif, pas
 appliqué au projet)** : un embedding multilingue (`paraphrase-multilingual-MiniLM-L12-v2`
 via `SentenceTransformerEmbeddingFunction`) a été testé sur un index ChromaDB temporaire, en
@@ -355,19 +440,30 @@ pas des manques à corriger dans l'immédiat.
   Robustesse inter-seed) le confirme avec des données indépendantes (de 0,032 à 0,131 selon la
   seed, presque ×4) — à ne jamais lire comme un score stable, contrairement au Dice/IoU (stables,
   0,892 ± 0,009 sur les mêmes 3 seeds).
+- Pas de validation externe : les métriques ci-dessus sont mesurées sur un jeu de test tenu à
+  l'écart mais issu du même dataset (même microscope, mêmes conditions d'acquisition). Aucune
+  évaluation n'a été faite sur des images d'un autre laboratoire/microscope — la généralisation à
+  d'autres conditions d'acquisition n'est donc pas démontrée, seulement plausible au vu de la
+  robustesse inter-seed ci-dessus.
 
 ## Perspectives
 
-- **Qualité de récupération du RAG en français** : la base documentaire couvre maintenant
-  toutes les catégories prévues (37 articles, voir ci-dessus), mais la recherche sémantique
-  par défaut (embeddings ChromaDB orientés anglais) ne remonte pas toujours l'article le plus
-  pertinent sur une question posée en français par un biologiste, alors qu'elle le fait sur
-  la même question en anglais avec le bon vocabulaire technique. Un premier essai avec un
-  embedding multilingue a déjà été mené (voir section Base documentaire du RAG ci-dessus) :
+- **Qualité de récupération du RAG** : la base documentaire couvre maintenant toutes les
+  catégories prévues (37 articles, voir ci-dessus), mais la recherche sémantique par défaut
+  (embeddings ChromaDB orientés anglais) ne remonte pas toujours l'article le plus pertinent. Le
+  benchmark reproductible ci-dessus (`chatbot/evaluate_retrieval.py`, Recall@3 = 60 %, MRR@10 =
+  0,514) affine le diagnostic initial : ce n'est pas seulement un écart français/anglais (la
+  question de comparaison Dice/U-Net échoue dans les deux langues avec cette formulation), mais
+  une sensibilité plus large à la formulation et au vocabulaire de la question. Un premier essai
+  avec un embedding multilingue a déjà été mené (voir section Base documentaire du RAG ci-dessus) :
   amélioration partielle mais pas suffisante pour être adoptée telle quelle. Pistes pour une
   itération plus poussée : un modèle multilingue plus grand (`multilingual-e5-base`), une
   recherche hybride mots-clés + embeddings, ou l'augmentation de `n_results` — chacune à
-  valider par les mêmes tests de récupération avant/après, pas par un changement à l'aveugle.
+  valider par le même benchmark de retrieval avant/après, pas par un changement à l'aveugle.
+- **Validation externe** : évaluer le modèle sur des images de scratch assay d'un autre
+  laboratoire/microscope demanderait un nouveau jeu de données annoté, non disponible à ce stade —
+  perspective la plus utile pour renforcer la généralisation, mais qui dépasse une simple
+  itération de code.
 - **Hyperparameter tuning** : un seul run MLflow tracé à ce jour (voir Ingénierie) ; tester
   d'autres encodeurs/`img_size`/learning rates permettrait de savoir si `unet_resnet34_holdout`
   est déjà un optimum local ou s'il reste de la marge.
@@ -383,15 +479,19 @@ python -m src.train --run_name unet_resnet34_holdout               # entraîneme
 python -m src.evaluate --run_name unet_resnet34_holdout --split test  # évaluation U-Net
 python -m src.evaluate --run_name unet_resnet34_holdout --split test --tta  # idem + TTA (voir Résultats)
 python -m src.baseline --split test                                 # évaluation baseline
+python -m src.statistical_comparison                                 # test de Wilcoxon U-Net vs baseline
 python -m src.error_analysis_figures                                 # figures d'analyse d'erreur
 python -m src.error_analysis_categories                              # analyse d'erreur quantitative par catégorie
 python -m src.plot_training_curves --run_name unet_resnet34_holdout  # courbes d'apprentissage
+python -m chatbot.evaluate_retrieval                                 # benchmark de récupération du RAG
 ```
 
 Résultats bruts : `outputs/predictions/test_metrics.json`,
 `outputs/predictions/test_metrics_tta.json`,
 `outputs/predictions/test_baseline_metrics.json`,
+`outputs/predictions/test_statistical_comparison.json`,
 `outputs/predictions/test_error_by_category.csv`,
 `outputs/predictions/test_error_category_summary.csv`,
 `outputs/predictions/test_comparisons/`, `outputs/predictions/test_comparisons_tta/`,
-`outputs/predictions/test_baseline_comparisons/`, `outputs/figures/`.
+`outputs/predictions/test_baseline_comparisons/`, `outputs/figures/`,
+`chatbot/retrieval_eval_results.json`.

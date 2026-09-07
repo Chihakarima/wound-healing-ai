@@ -1,0 +1,226 @@
+{
+  "k_recall": 3,
+  "k_max": 10,
+  "n_questions": 10,
+  "recall_at_k": 0.6,
+  "mrr_at_k_max": 0.5142857142857142,
+  "per_question": [
+    {
+      "categorie": "deep_learning_segmentation",
+      "question": "What is the U-Net architecture used for biomedical image segmentation?",
+      "titres_attendus": [
+        "U-Net: Convolutional Networks for Biomedical Image Segmentation"
+      ],
+      "rang_trouve": 2,
+      "present_at_3": true,
+      "reciprocal_rank": 0.5,
+      "top_3_retournes": [
+        "TernausNet: U-Net with VGG11 Encoder Pre-Trained on ImageNet for Image Segmentation",
+        "U-Net: Convolutional Networks for Biomedical Image Segmentation",
+        "An automated in vitro wound healing microscopy image analysis approach utilizing U-net-based deep learning methodology"
+      ]
+    },
+    {
+      "categorie": "comparaison_dice_unet (EN)",
+      "question": "Is a Dice score of 0.88 low compared to other U-Net studies on the scratch assay?",
+      "titres_attendus": [
+        "An automated in vitro wound healing microscopy image analysis approach utilizing U-net-based deep learning methodology"
+      ],
+      "rang_trouve": null,
+      "present_at_3": false,
+      "reciprocal_rank": 0.0,
+      "top_3_retournes": [
+        "A Robust and Standardized Approach to Quantify Wound Closure Using the Scratch Assay",
+        "AIM: A Computational Tool for the Automatic Quantification of Scratch Wound Healing Assays",
+        "A novel magnet-based scratch method for standardisation of wound-healing assays"
+      ]
+    },
+    {
+      "categorie": "comparaison_dice_unet (FR)",
+      "question": "Mon Dice de 0,882 est-il faible comparé à d'autres études U-Net sur scratch assay ?",
+      "titres_attendus": [
+        "An automated in vitro wound healing microscopy image analysis approach utilizing U-net-based deep learning methodology"
+      ],
+      "rang_trouve": null,
+      "present_at_3": false,
+      "reciprocal_rank": 0.0,
+      "top_3_retournes": [
+        "An effective device to enable consistent scratches for in vitro scratch assays",
+        "AIM: A Computational Tool for the Automatic Quantification of Scratch Wound Healing Assays",
+        "A Robust and Standardized Approach to Quantify Wound Closure Using the Scratch Assay"
+      ]
+    },
+    {
+      "categorie": "metrics_evaluation",
+      "question": "What metrics should I use to evaluate medical image segmentation quality?",
+      "titres_attendus": [
+        "Metrics for evaluating 3D medical image segmentation: analysis, selection, and tool",
+        "Metrics reloaded: recommendations for image analysis validation"
+      ],
+      "rang_trouve": 1,
+      "present_at_3": true,
+      "reciprocal_rank": 1.0,
+      "top_3_retournes": [
+        "Metrics for evaluating 3D medical image segmentation: analysis, selection, and tool",
+        "Embracing imperfect datasets: A review of deep learning solutions for medical image segmentation",
+        "A Robust Morphological Approach for Automated Segmentation and Quantification of Scratch Assay Micrographs"
+      ]
+    },
+    {
+      "categorie": "metrics_evaluation",
+      "question": "Why can the Hausdorff distance be unstable across segmentation runs?",
+      "titres_attendus": [
+        "Metrics for evaluating 3D medical image segmentation: analysis, selection, and tool",
+        "Metrics reloaded: recommendations for image analysis validation"
+      ],
+      "rang_trouve": 2,
+      "present_at_3": true,
+      "reciprocal_rank": 0.5,
+      "top_3_retournes": [
+        "A novel method for evaluating and visualizing scratch wound healing assays using level-set and image sector analysis",
+        "Metrics for evaluating 3D medical image segmentation: analysis, selection, and tool",
+        "Hybrid Image-Based Wound Healing Analysis Using Entropy-Based Segmentation, Texture Features, and Optical Flow"
+      ]
+    },
+    {
+      "categorie": "scratch_assay_principles",
+      "question": "What are the limitations of the scratch assay for studying wound healing?",
+      "titres_attendus": [
+        "The In Vitro Wound‐Scratch Assay: Applications, Technical Advances, and Limitations in Wound Healing Research"
+      ],
+      "rang_trouve": 7,
+      "present_at_3": false,
+      "reciprocal_rank": 0.14285714285714285,
+      "top_3_retournes": [
+        "A Robust and Standardized Approach to Quantify Wound Closure Using the Scratch Assay",
+        "AIM: A Computational Tool for the Automatic Quantification of Scratch Wound Healing Assays",
+        "An effective device to enable consistent scratches for in vitro scratch assays"
+      ]
+    },
+    {
+      "categorie": "deep_learning_segmentation",
+      "question": "Does pretraining the encoder on ImageNet improve U-Net segmentation accuracy?",
+      "titres_attendus": [
+        "TernausNet: U-Net with VGG11 Encoder Pre-Trained on ImageNet for Image Segmentation"
+      ],
+      "rang_trouve": 1,
+      "present_at_3": true,
+      "reciprocal_rank": 1.0,
+      "top_3_retournes": [
+        "TernausNet: U-Net with VGG11 Encoder Pre-Trained on ImageNet for Image Segmentation",
+        "U-Net: Convolutional Networks for Biomedical Image Segmentation",
+        "An automated in vitro wound healing microscopy image analysis approach utilizing U-net-based deep learning methodology"
+      ]
+    },
+    {
+      "categorie": "automated_analysis",
+      "question": "What software tools exist for automated scratch assay quantification, like ImageJ plugins?",
+      "titres_attendus": [
+        "An ImageJ plugin for the high throughput image analysis of in vitro scratch wound healing assays",
+        "TScratch: a novel and simple software tool for automated analysis of monolayer wound healing assays"
+      ],
+      "rang_trouve": 1,
+      "present_at_3": true,
+      "reciprocal_rank": 1.0,
+      "top_3_retournes": [
+        "An ImageJ plugin for the high throughput image analysis of in vitro scratch wound healing assays",
+        "AIM: A Computational Tool for the Automatic Quantification of Scratch Wound Healing Assays",
+        "InVitroGap: an open-source tool for automated quantification of wound closure in the in vitro scratch assay"
+      ]
+    },
+    {
+      "categorie": "deep_learning_segmentation",
+      "question": "How to train a deep learning segmentation model with only a few annotated images?",
+      "titres_attendus": [
+        "Embracing imperfect datasets: A review of deep learning solutions for medical image segmentation"
+      ],
+      "rang_trouve": 1,
+      "present_at_3": true,
+      "reciprocal_rank": 1.0,
+      "top_3_retournes": [
+        "Embracing imperfect datasets: A review of deep learning solutions for medical image segmentation",
+        "U-Net: Convolutional Networks for Biomedical Image Segmentation",
+        "TernausNet: U-Net with VGG11 Encoder Pre-Trained on ImageNet for Image Segmentation"
+      ]
+    },
+    {
+      "categorie": "analyse_temporelle",
+      "question": "Combien de points de mesure sont nécessaires pour caractériser la cinétique de fermeture d'une plaie ?",
+      "titres_attendus": [
+        "Study of Wound Healing Dynamics by Single Pseudo-Particle Tracking in Phase Contrast Images Acquired in Time-Lapse",
+        "A novel magnet-based scratch method for standardisation of wound-healing assays"
+      ],
+      "rang_trouve": null,
+      "present_at_3": false,
+      "reciprocal_rank": 0.0,
+      "top_3_retournes": [
+        "Metrics for evaluating 3D medical image segmentation: analysis, selection, and tool",
+        "AIM: A Computational Tool for the Automatic Quantification of Scratch Wound Healing Assays",
+        "Metrics reloaded: recommendations for image analysis validation"
+      ]
+    }
+  ],
+  "reformulation_experiment": {
+    "n_questions": 4,
+    "recall_at_k_original": 0.0,
+    "recall_at_k_reformule": 0.5,
+    "comparaisons": [
+      {
+        "categorie": "comparaison_dice_unet (EN)",
+        "question_originale": "Is a Dice score of 0.88 low compared to other U-Net studies on the scratch assay?",
+        "question_reformulee": "Dice similarity coefficient comparison of U-Net deep learning models for in vitro wound healing scratch assay segmentation versus ImageJ and TScratch",
+        "rang_original": null,
+        "rang_reformule": 1,
+        "present_at_3_original": false,
+        "present_at_3_reformule": true,
+        "top_3_retournes_reformule": [
+          "An automated in vitro wound healing microscopy image analysis approach utilizing U-net-based deep learning methodology",
+          "An ImageJ plugin for the high throughput image analysis of in vitro scratch wound healing assays",
+          "DeepScratch: Single-cell based topological metrics of scratch wound assays"
+        ]
+      },
+      {
+        "categorie": "comparaison_dice_unet (FR)",
+        "question_originale": "Mon Dice de 0,882 est-il faible comparé à d'autres études U-Net sur scratch assay ?",
+        "question_reformulee": "Coefficient de similarité de Dice (DSC) des modèles U-Net pour la segmentation d'images de scratch assay de cicatrisation, comparé aux outils ImageJ et TScratch",
+        "rang_original": null,
+        "rang_reformule": 8,
+        "present_at_3_original": false,
+        "present_at_3_reformule": false,
+        "top_3_retournes_reformule": [
+          "A Robust Morphological Approach for Automated Segmentation and Quantification of Scratch Assay Micrographs",
+          "An ImageJ plugin for the high throughput image analysis of in vitro scratch wound healing assays",
+          "Scratch assay microscopy: A reaction–diffusion equation approach for common instruments and data"
+        ]
+      },
+      {
+        "categorie": "scratch_assay_principles",
+        "question_originale": "What are the limitations of the scratch assay for studying wound healing?",
+        "question_reformulee": "In vitro wound-scratch assay: technical advances and limitations in wound healing research",
+        "rang_original": 7,
+        "rang_reformule": 2,
+        "present_at_3_original": false,
+        "present_at_3_reformule": true,
+        "top_3_retournes_reformule": [
+          "A Robust and Standardized Approach to Quantify Wound Closure Using the Scratch Assay",
+          "The In Vitro Wound‐Scratch Assay: Applications, Technical Advances, and Limitations in Wound Healing Research",
+          "AIM: A Computational Tool for the Automatic Quantification of Scratch Wound Healing Assays"
+        ]
+      },
+      {
+        "categorie": "analyse_temporelle",
+        "question_originale": "Combien de points de mesure sont nécessaires pour caractériser la cinétique de fermeture d'une plaie ?",
+        "question_reformulee": "Suivi en time-lapse de la dynamique de fermeture de plaie par pseudo-particle tracking en scratch assay",
+        "rang_original": null,
+        "rang_reformule": 4,
+        "present_at_3_original": false,
+        "present_at_3_reformule": false,
+        "top_3_retournes_reformule": [
+          "An effective device to enable consistent scratches for in vitro scratch assays",
+          "AIM: A Computational Tool for the Automatic Quantification of Scratch Wound Healing Assays",
+          "Scratch assay microscopy: A reaction–diffusion equation approach for common instruments and data"
+        ]
+      }
+    ]
+  }
+}
