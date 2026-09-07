@@ -4,10 +4,12 @@ the learning curves can be plotted directly for the report."""
 import argparse
 import csv
 import os
+import random
 import sys
 import time
 
 import mlflow
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
@@ -69,13 +71,25 @@ def main():
                          help="epochs to train with the pretrained encoder frozen before unfreezing (transfer learning warmup)")
     parser.add_argument("--patience", type=int, default=15, help="early stopping patience on val Dice")
     parser.add_argument("--run_name", type=str, default="unet_resnet34")
+    parser.add_argument("--seed", type=int, default=42,
+                         help="graine pour l'initialisation des poids et le shuffle des données "
+                              "(pour une étude de variance inter-seed, cf. README/Perspectives)")
+    parser.add_argument("--splits_dir", type=str, default=SPLITS_DIR,
+                         help="dossier contenant train.txt/val.txt (défaut: data/splits, les "
+                              "splits canoniques -- utiliser un dossier alternatif, généré par "
+                              "src.split_data --out_dir, pour une étude multi-seed)")
     args = parser.parse_args()
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"device: {device}")
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed_all(args.seed)
 
-    train_ids = load_ids(os.path.join(SPLITS_DIR, "train.txt"))
-    val_ids = load_ids(os.path.join(SPLITS_DIR, "val.txt"))
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"device: {device}, seed: {args.seed}")
+
+    train_ids = load_ids(os.path.join(args.splits_dir, "train.txt"))
+    val_ids = load_ids(os.path.join(args.splits_dir, "val.txt"))
     print(f"train: {len(train_ids)}, val: {len(val_ids)}")
 
     train_ds = PlateSegmentationDataset(train_ids, args.img_size, train=True)

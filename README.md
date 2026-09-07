@@ -107,6 +107,29 @@ extrémités de la plaie, lissés par le TTA, pas d'un problème de recouvrement
 **opt-in** (pas le comportement par défaut de l'app ni des figures ci-dessous) : ~4x plus lent par
 image, et l'objectif du projet reste le recouvrement/la surface plutôt que le Hausdorff.
 
+### Robustesse inter-seed
+
+Le run canonique ci-dessus (`unet_resnet34_holdout`) n'était pas reproductible à la graine près
+(aucune graine fixée dans une version antérieure de [src/train.py](src/train.py)). Pour vérifier
+que ce résultat ne tient pas à un split ou une initialisation favorables, le même protocole
+(mêmes hyperparamètres, split + initialisation régénérés à chaque fois, seed réellement fixée
+via `--seed`) a été répété sur 3 graines (`unet_resnet34_seed42/123/2026`) :
+
+| Seed | Dice | IoU | Erreur de surface | Hausdorff normalisé |
+|---|---:|---:|---:|---:|
+| 42 | 0,880 | 0,791 | 16,1 % | 0,083 |
+| 123 | 0,904 | 0,828 | 7,2 % | 0,131 |
+| 2026 | 0,892 | 0,809 | 8,8 % | 0,032 |
+| **moyenne ± écart-type** | **0,892 ± 0,009** | **0,809 ± 0,015** | **10,7 % ± 3,9 %** | **0,082 ± 0,040** |
+
+**Lecture :** le Dice est stable d'une graine à l'autre (écart-type de 0,009 sur une moyenne de
+0,892, cohérent avec le 0,882 du run canonique) — la performance du modèle n'est pas un coup de
+chance lié au split. Le Hausdorff normalisé, en revanche, varie énormément selon la graine (de
+0,032 à 0,131, presque ×4) : ça confirme, avec des données cette fois, qu'il ne doit pas être
+sur-interprété comme un score de qualité stable — sa valeur dépend fortement de détails
+d'initialisation qui affectent surtout les extrémités de contour, pas du recouvrement global
+(cohérent avec l'hypothèse et l'expérience TTA ci-dessus).
+
 ## Analyse d'erreur
 
 **Figure 1** (`outputs/figures/figure1_exemples.png`) — quatre cas représentatifs
@@ -186,10 +209,13 @@ Couverture actuelle :
   | Run | Encodeur | img_size | Époques | Train/Val | Meilleur Dice (val) |
   |---|---|---:|---:|---|---:|
   | `unet_resnet34_holdout` | resnet34 | 384 | 60 | 68 / 14 | 0,923 |
+  | `unet_resnet34_seed42` | resnet34 | 384 | 60 | 68 / 14 | 0,921 |
+  | `unet_resnet34_seed123` | resnet34 | 384 | 60 | 68 / 14 | 0,923 |
+  | `unet_resnet34_seed2026` | resnet34 | 384 | 58 (early stop) | 68 / 14 | 0,914 |
 
-  Un seul run est tracé à ce jour (celui utilisé pour tous les résultats de ce
-  README) ; le tableau est amené à s'étoffer si d'autres configurations sont
-  testées.
+  Les 3 derniers runs sont l'étude multi-seed de robustesse (voir Résultats ci-dessus) ; même
+  configuration que `unet_resnet34_holdout`, split et initialisation régénérés par seed. Pas
+  encore d'autre configuration (encodeur/img_size/lr) testée — voir Perspectives.
 - **Tests** (`tests/`) : mesures, métriques, synthèse chatbot.
 
 ### Ce qui n'est volontairement pas fait
@@ -209,13 +235,12 @@ pas des manques à corriger dans l'immédiat.
   compromis global.
 - Performances dégradées sur les plaies quasi refermées (< ~3 % du champ) —
   voir analyse d'erreur ci-dessus.
-- Le Hausdorff normalisé du U-Net est élevé (0,323) mais l'expérience TTA ci-dessus
-  (section Résultats) confirme l'hypothèse : ce sont des artefacts de contour isolés
-  (lissés par le TTA, sans changer le Dice), pas un problème de recouvrement global.
-- **Reproductibilité expérimentale** : un seul run d'entraînement a été réalisé à ce
-  stade (`unet_resnet34_holdout`) ; la variance des performances liée à l'initialisation
-  et au split n'est donc pas estimée, et le résultat pourrait en partie dépendre d'un
-  split favorable plutôt que refléter uniquement la qualité du modèle.
+- Le Hausdorff normalisé du U-Net est élevé (0,323 sur le run canonique) et surtout **très
+  variable** : l'expérience TTA ci-dessus (section Résultats) l'explique par des artefacts de
+  contour isolés (lissés par le TTA, sans changer le Dice), et l'étude multi-seed (section
+  Robustesse inter-seed) le confirme avec des données indépendantes (de 0,032 à 0,131 selon la
+  seed, presque ×4) — à ne jamais lire comme un score stable, contrairement au Dice/IoU (stables,
+  0,892 ± 0,009 sur les mêmes 3 seeds).
 
 ## Perspectives
 

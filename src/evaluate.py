@@ -62,14 +62,21 @@ def main():
     parser.add_argument("--tta", action="store_true",
                          help="Test-Time Augmentation : moyenne les probabilités sur 4 flips "
                               "avant seuillage (voir src/predict.py). ~4x plus lent.")
+    parser.add_argument("--splits_dir", type=str, default=SPLITS_DIR,
+                         help="dossier contenant {split}.txt (défaut: data/splits, les splits "
+                              "canoniques -- utiliser un dossier alternatif pour une étude multi-seed)")
+    parser.add_argument("--out_dir", type=str, default=PRED_DIR,
+                         help="dossier de sortie des métriques/comparaisons (défaut: outputs/predictions, "
+                              "les résultats canoniques -- utiliser un autre dossier pour ne pas les "
+                              "écraser lors d'une étude multi-seed)")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model, img_size = load_model(args.run_name, device)
 
     suffix = "_tta" if args.tta else ""
-    ids = load_ids(os.path.join(SPLITS_DIR, f"{args.split}.txt"))
-    out_dir = os.path.join(PRED_DIR, f"{args.split}_comparisons{suffix}")
+    ids = load_ids(os.path.join(args.splits_dir, f"{args.split}.txt"))
+    out_dir = os.path.join(args.out_dir, f"{args.split}_comparisons{suffix}")
     os.makedirs(out_dir, exist_ok=True)
 
     dices, ious, precisions, recalls = [], [], [], []
@@ -144,7 +151,7 @@ def main():
           f"RMSE={rmse_area_px:.0f} px², erreur relative moyenne={mean_area_error_pct:.1f}%")
     print(f"Visuels de comparaison -> {out_dir}")
 
-    with open(os.path.join(PRED_DIR, f"{args.split}_metrics{suffix}.json"), "w", encoding="utf-8") as f:
+    with open(os.path.join(args.out_dir, f"{args.split}_metrics{suffix}.json"), "w", encoding="utf-8") as f:
         json.dump({
             "split": args.split,
             "tta": args.tta,
