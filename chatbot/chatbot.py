@@ -293,6 +293,11 @@ Vitesse de fermeture par intervalle, déjà calculée par le pipeline (sers-t'en
 vitesses moyennes entre intervalles, sans recalculer ces vitesses toi-même) :
 {intervalles}
 
+Phrase de liaison entre le taux moyen global et l'hétérogénéité par intervalle, déjà composée \
+par le pipeline (à reprendre mot pour mot dans "Analyse quantitative" si elle contient une vraie \
+phrase ; si elle est entre parenthèses, ne la reprends pas et n'en invente pas d'équivalent) :
+{phrase_heterogeneite}
+
 Détail des mesures par point de temps (pour décrire la tendance point par point uniquement) :
 {mesures}
 
@@ -319,10 +324,12 @@ est mesuré, ce qui est calculé, ce qui reste prudent, et ce qui vient de la li
   ou absent. Précise aussi quel intervalle a le taux le plus élevé / le plus faible (depuis les
   vitesses par intervalle ci-dessus), sans te contenter de répéter les chiffres déjà visibles dans
   le tableau du biologiste.
-- S'il y a au moins 2 intervalles aux taux différents, relie explicitement le taux moyen global aux
-  taux par intervalle en une phrase, par exemple : "le taux moyen sur l'ensemble de la période
-  ([vitesse_moyenne]%/h) masque cette hétérogénéité." Sans cette phrase, un lecteur qui compare le
-  résumé au tableau des mesures peut croire à un oubli plutôt qu'à un choix de présentation.
+- Si la "Phrase de liaison" ci-dessus contient une vraie phrase (pas une note entre parenthèses),
+  REPRENDS-LA MOT POUR MOT dans cette section, sans changer un seul chiffre et sans la recomposer
+  toi-même : ne recopie jamais le taux d'un intervalle à la place du taux moyen global dans cette
+  phrase, cette phrase fait seule autorité sur ce point précis. Sans elle, un lecteur qui compare le
+  résumé au tableau des mesures peut croire à un oubli plutôt qu'à un choix de présentation. Si elle
+  est entre parenthèses, n'invente pas de comparaison d'hétérogénéité à la place.
 - 2 à 3 phrases au total pour cette section.
 - IMPORTANT : chaque vitesse en %/h que tu écris doit être copiée mot pour mot depuis la section
   "Vitesse de fermeture par intervalle" ci-dessus (ou depuis la synthèse chiffrée pour la vitesse
@@ -481,6 +488,30 @@ def _format_intervalles(intervalles: list[dict]) -> str:
     return "\n".join(lignes)
 
 
+def _phrase_heterogeneite(synthese: dict, intervalles: list[dict]) -> str:
+    """Phrase toute faite reliant le taux moyen global à l'hétérogénéité entre
+    intervalles, composée dans le code plutôt que par le LLM : constaté en pratique,
+    même avec les deux chiffres déjà disponibles séparément (taux moyen dans la
+    synthèse, taux par intervalle dans _format_intervalles), un modèle local comme
+    mistral 7B peut recopier le mauvais chiffre en recomposant cette phrase
+    lui-même (ex: réutiliser le taux d'un intervalle à la place du taux global)."""
+    if len(intervalles) < 2:
+        return "(un seul intervalle disponible : pas de phrase de liaison pertinente)"
+
+    plus_rapide = max(intervalles, key=lambda iv: iv["vitesse_pct_h"])
+    plus_lent = min(intervalles, key=lambda iv: iv["vitesse_pct_h"])
+    if plus_rapide is plus_lent:
+        return "(taux identique sur tous les intervalles : pas d'hétérogénéité à signaler)"
+
+    return (
+        f"Le taux moyen de fermeture sur l'ensemble de la période "
+        f"({_fr(synthese['vitesse_moyenne_pct_h'])}%/h) masque cette hétérogénéité : le taux "
+        f"estimé est plus élevé sur l'intervalle {_fr(plus_rapide['t_debut'])}h-{_fr(plus_rapide['t_fin'])}h "
+        f"({_fr(plus_rapide['vitesse_pct_h'])}%/h) que sur l'intervalle "
+        f"{_fr(plus_lent['t_debut'])}h-{_fr(plus_lent['t_fin'])}h ({_fr(plus_lent['vitesse_pct_h'])}%/h)."
+    )
+
+
 def generer_resume_stream(rows: list[dict], n_articles: int = 3):
     """Génère un résumé scientifique (style "Résultats") de l'évolution de la surface
     de la plaie au cours du temps, appuyé sur la littérature, en streaming.
@@ -498,6 +529,7 @@ def generer_resume_stream(rows: list[dict], n_articles: int = 3):
     prompt = PROMPT_RAPPORT.format(
         synthese=_format_synthese(synthese, n_mesures=len(rows)),
         intervalles=_format_intervalles(intervalles),
+        phrase_heterogeneite=_phrase_heterogeneite(synthese, intervalles),
         mesures=_format_mesures(rows),
         contexte=_format_contexte(articles),
     )

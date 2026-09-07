@@ -9,7 +9,13 @@ import sys
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "chatbot"))
-from chatbot import _calculer_intervalles, _calculer_synthese, _format_intervalles, _format_synthese
+from chatbot import (
+    _calculer_intervalles,
+    _calculer_synthese,
+    _format_intervalles,
+    _format_synthese,
+    _phrase_heterogeneite,
+)
 
 ROWS = [
     {"time_h": 0, "area_px2": 8410, "closure_pct": 0.0},
@@ -54,3 +60,21 @@ def test_format_intervalles_signale_le_plus_rapide_et_le_plus_lent():
 def test_un_seul_point_ne_produit_aucun_intervalle():
     assert _calculer_intervalles(ROWS[:1]) == []
     assert "pas d'intervalle" in _format_intervalles([])
+
+
+def test_phrase_heterogeneite_utilise_le_taux_global_pas_un_taux_d_intervalle():
+    """Régression : le LLM a une fois recopié le taux d'un intervalle (1,58%/h) à la
+    place du taux moyen global (0,83%/h) en composant cette phrase lui-même. La
+    phrase est maintenant entièrement pré-calculée dans le code pour que ce genre
+    d'erreur de recopie ne puisse plus se produire, quel que soit le LLM utilisé."""
+    synthese = _calculer_synthese(ROWS)
+    phrase = _phrase_heterogeneite(synthese, _calculer_intervalles(ROWS))
+    assert "1,49%/h" in phrase  # taux moyen global, pas un taux d'intervalle
+    assert "1,67%/h" in phrase  # intervalle le plus rapide (0h-24h)
+    assert "1,32%/h" in phrase  # intervalle le plus lent (24h-48h)
+
+
+def test_phrase_heterogeneite_absente_avec_un_seul_intervalle():
+    synthese = _calculer_synthese(ROWS[:2])
+    phrase = _phrase_heterogeneite(synthese, _calculer_intervalles(ROWS[:2]))
+    assert phrase.startswith("(")
