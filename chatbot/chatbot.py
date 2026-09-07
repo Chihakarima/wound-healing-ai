@@ -310,9 +310,10 @@ doit contenir QUE le type d'information indiqué, pour que le biologiste disting
 est mesuré, ce qui est calculé, ce qui reste prudent, et ce qui vient de la littérature :
 
 **Résultats observés**
-- 1 à 2 phrases, UNIQUEMENT les valeurs mesurées telles quelles : surface initiale et finale,
-  fermeture finale en %, durée totale d'observation. Reprends-les exactement depuis la synthèse
-  chiffrée ci-dessus, sans les recalculer ni en changer aucune. Aucune interprétation ici.
+- 1 à 2 phrases, UNIQUEMENT les valeurs mesurées telles quelles : nombre de mesures, surface
+  initiale et finale, fermeture finale en %, durée totale d'observation. Reprends-les exactement
+  depuis la synthèse chiffrée ci-dessus (ligne "Nombre de mesures" incluse), sans les recalculer
+  ni en changer aucune. Aucune interprétation ici.
 - n'affirme jamais que "le biologiste a effectué l'expérience" ou toute variante supposant qui a
   réalisé la manipulation (l'application ne le sait pas) : décris les mesures elles-mêmes, par
   exemple "les mesures analysées proviennent d'un essai de type scratch assay" ou "l'analyse des
@@ -354,8 +355,9 @@ est mesuré, ce qui est calculé, ce qui reste prudent, et ce qui vient de la li
   CI-DESSUS, jamais des valeurs numériques différentes ; n'écris JAMAIS les mots "accélération",
   "accéléré", "ralentissement" ou "ralenti" au sujet de la cicatrisation elle-même, et n'écris
   jamais que "la plaie cicatrise plus vite/plus lentement",
-- rappelle en une phrase que ce résumé décrit une évolution globale sur un nombre de mesures
-  limité (voir "Nombre de mesures" dans la synthèse ci-dessus), pas une cinétique fine,
+- rappelle en une phrase, SANS RÉPÉTER LE CHIFFRE (déjà donné dans "Résultats observés" ci-dessus,
+  ne le recompte ni ne l'invente pas une seconde fois ici), que ce résumé décrit une évolution
+  globale sur peu de mesures, pas une cinétique fine,
 - n'affirme jamais une tendance qui contredirait les vitesses par intervalle fournies ci-dessus.
 
 **Mise en contexte scientifique**
