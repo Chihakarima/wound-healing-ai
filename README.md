@@ -160,6 +160,38 @@ suffisent à faire chuter fortement le Dice/IoU (métriques proportionnelles à 
 surface). Ce n'est ni un bug ni un échec de généralisation isolé, mais une limite
 connue et mesurable sur les plaies quasi refermées, partagée par les deux méthodes.
 
+### Analyse d'erreur quantitative par catégorie
+
+Pour vérifier avec des chiffres (pas seulement les 4 cas de la figure 1) les deux
+hypothèses ci-dessus — dégradation sur les plaies quasi refermées et fragilité de
+la baseline face à un éclairage atypique —
+[src/error_analysis_categories.py](src/error_analysis_categories.py) croise les
+métriques déjà calculées avec deux critères **objectifs et reproductibles** (pas
+un classement visuel manuel) :
+- surface relative de la plaie, seuillée à 3 % (le seuil déjà utilisé plus haut) ;
+- luminosité moyenne du champ, comparée par z-score à la distribution du dataset
+  complet (97 images) — un proxy de l'éclairage/contraste atypique évoqué pour
+  l'image 76.
+
+| Éclairage (test, n) | Dice U-Net | Dice baseline |
+|---|---:|---:|
+| Normal (12) | 0,884 | 0,656 |
+| Atypique (2 : images 76, 91) | 0,874 | **0,092** |
+
+**Lecture :** sur les 2 images de test à l'éclairage atypique (z-score de
+luminosité \|z\| > 1,5 vs le dataset complet), le U-Net reste stable (Dice 0,874,
+quasi identique au reste du test) alors que la baseline s'effondre (Dice moyen
+0,092, erreur de surface > 1000 %) — ça confirme avec des données, au-delà du
+seul cas 76 illustré en figure 1, que la fragilité de la baseline au contraste
+est systématique et pas un exemple isolé choisi après coup.
+
+**Avertissement sur la taille d'échantillon :** avec seulement 14 images de test,
+chaque catégorie contient 1 à 13 images (voir
+`outputs/predictions/test_error_category_summary.csv`, colonne `n`) — ce tableau
+sert à vérifier une tendance déjà observée qualitativement, pas à établir un
+résultat statistique. La catégorie "quasi fermée" ne contient qu'1 image (la 93,
+déjà discutée ci-dessus) et n'est reportée qu'à titre indicatif.
+
 ## Application (Streamlit)
 
 `streamlit run app.py` — trois onglets :
@@ -271,11 +303,14 @@ python -m src.evaluate --run_name unet_resnet34_holdout --split test  # évaluat
 python -m src.evaluate --run_name unet_resnet34_holdout --split test --tta  # idem + TTA (voir Résultats)
 python -m src.baseline --split test                                 # évaluation baseline
 python -m src.error_analysis_figures                                 # figures d'analyse d'erreur
+python -m src.error_analysis_categories                              # analyse d'erreur quantitative par catégorie
 python -m src.plot_training_curves --run_name unet_resnet34_holdout  # courbes d'apprentissage
 ```
 
 Résultats bruts : `outputs/predictions/test_metrics.json`,
 `outputs/predictions/test_metrics_tta.json`,
 `outputs/predictions/test_baseline_metrics.json`,
+`outputs/predictions/test_error_by_category.csv`,
+`outputs/predictions/test_error_category_summary.csv`,
 `outputs/predictions/test_comparisons/`, `outputs/predictions/test_comparisons_tta/`,
 `outputs/predictions/test_baseline_comparisons/`, `outputs/figures/`.
