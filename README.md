@@ -213,25 +213,42 @@ déjà discutée ci-dessus) et n'est reportée qu'à titre indicatif.
 
 ### Base documentaire du RAG
 
-14 articles sélectionnés manuellement (`chatbot/articles_cicatrisation.json`), et non
-100 articles récupérés automatiquement sans tri : chaque candidat a été examiné (titre +
-résumé) et retenu ou rejeté selon sa pertinence réelle pour le projet, avec la décision et
-la raison tracées dans [`chatbot/curation_log.csv`](chatbot/curation_log.csv).
-Chaque article retenu porte une `category` (voir `chatbot/index_articles.py`).
+37 articles sélectionnés manuellement (`chatbot/articles_cicatrisation.json`), et non
+100+ articles récupérés automatiquement sans tri : chaque candidat a été examiné (titre +
+résumé officiel vérifié à la source) et retenu ou rejeté selon sa pertinence réelle pour le
+projet, avec la décision et la raison tracées dans
+[`chatbot/curation_log.csv`](chatbot/curation_log.csv). Chaque article retenu porte une
+`category` (voir `chatbot/index_articles.py`).
 
 Couverture actuelle :
-- ✅ Principes et limites du scratch assay (3)
+- ✅ Principes, limites et protocole du scratch assay (6)
 - ✅ Automatisation et analyse d'image (10)
-- ⚠️ Deep learning / segmentation biomédicale : **0 article** — les requêtes Semantic
-  Scholar ciblées ont échoué (429 persistant sur l'API publique, sans clé, 3 tentatives).
-  Voir Perspectives ci-dessous.
-- ⚠️ Métriques d'évaluation (Dice/IoU/Hausdorff) : 1 seul article, pour la même raison —
-  lacune jugée moins urgente que la précédente, ces métriques étant de toute façon
-  calculées et validées directement par le code ([src/metrics.py](src/metrics.py)), pas
-  par le LLM.
+- ✅ Quantification de la fermeture (4)
+- ✅ Migration cellulaire et prolifération (4)
+- ✅ Analyse d'image classique (seuillage, texture, outils historiques) (3)
+- ✅ Deep learning / segmentation biomédicale (5) — U-Net original, un comparateur direct
+  U-Net appliqué au scratch assay (Dice 0,958-0,968 sur 400+ images, à mettre en regard du
+  Dice 0,882 du projet sur 97 images), et la justification de l'encodeur pré-entraîné.
+- ✅ Métriques d'évaluation (Dice/IoU/Hausdorff) (3) — dont la référence qui explique
+  l'instabilité du Hausdorff déjà documentée empiriquement dans ce projet (voir Résultats).
+- ✅ Analyse temporelle / cinétique (2) — la plus difficile à couvrir : le candidat le plus
+  pertinent était déjà dans le corpus, voir `curation_log.csv`.
+- ⏸️ 2 articles écartés de ce tour d'ajout faute de résumé officiel accessible en texte
+  intégral (Otsu 1979, paywall IEEE ; Seghier 2024, paywall Wiley) — non intégrés plutôt
+  que résumés inventés, conformément à la règle de non-invention.
 - ❌ Applications biologiques (traitements/molécules) retirées volontairement : elles
   parlent de cicatrisation via l'effet d'une molécule précise, pas du mécanisme de
   cicatrisation/migration ni de la méthode de mesure elle-même — hors du cœur du projet.
+
+**Limite de récupération constatée après cet élargissement** : la recherche sémantique
+(`chatbot/index_articles.py`, embeddings par défaut de ChromaDB, orientés anglais) retrouve
+correctement les nouveaux articles sur une question formulée en anglais avec le bon
+vocabulaire technique, mais pas toujours sur la même question posée en français par un
+biologiste (ex : "Mon Dice de 0,882 est-il faible comparé à d'autres études U-Net sur
+scratch assay ?" ne remonte pas l'article de comparaison directe pourtant présent dans le
+corpus). Les articles sont bien indexés et disponibles, mais leur remontée effective dans le
+chat dépend de la formulation de la question — piste identifiée, non résolue dans ce tour de
+travail (voir Perspectives).
 
 ## Ingénierie
 
@@ -282,20 +299,17 @@ pas des manques à corriger dans l'immédiat.
 
 ## Perspectives
 
-- **Base documentaire du RAG** : les catégories deep learning/segmentation et métriques
-  restent sous-couvertes (voir ci-dessus) parce que l'API publique Semantic Scholar est
-  saturée sans clé (429 persistant sur 3 tentatives), pas par manque d'articles pertinents
-  disponibles. Solution identifiée et prête à appliquer : une clé API Semantic Scholar
-  gratuite lève cette limite de débit — `chatbot/fetch_articles_by_category.py` n'a besoin
-  d'aucune autre modification pour en profiter. Non appliqué pour l'instant : c'est un
-  enrichissement périphérique du RAG, pas une correction du cœur du projet (segmentation,
-  évaluation, baseline), et le RAG reste fonctionnel et honnête sur cette limite en l'état.
+- **Qualité de récupération du RAG en français** : la base documentaire couvre maintenant
+  toutes les catégories prévues (37 articles, voir ci-dessus), mais la recherche sémantique
+  par défaut (embeddings ChromaDB orientés anglais) ne remonte pas toujours l'article le plus
+  pertinent sur une question posée en français par un biologiste, alors qu'elle le fait sur
+  la même question en anglais avec le bon vocabulaire technique. Piste à évaluer : un modèle
+  d'embedding multilingue (ex. `paraphrase-multilingual-*` de sentence-transformers) en
+  remplacement de la fonction d'embedding par défaut de `chatbot/index_articles.py`, à valider
+  par des tests de récupération avant/après plutôt qu'un changement à l'aveugle.
 - **Hyperparameter tuning** : un seul run MLflow tracé à ce jour (voir Ingénierie) ; tester
   d'autres encodeurs/`img_size`/learning rates permettrait de savoir si `unet_resnet34_holdout`
   est déjà un optimum local ou s'il reste de la marge.
-- **Plusieurs seeds** : répéter l'entraînement avec plusieurs seeds (même configuration,
-  split différent à chaque fois) et rapporter Dice = moyenne ± écart-type permettrait de
-  vérifier que le résultat actuel n'est pas dû à un split particulièrement favorable.
 - **Comparaison architecturale** : comparer U-Net/ResNet34 à une autre architecture de
   segmentation légère permettrait de savoir si le gain observé face à la baseline vient
   du deep learning en général ou spécifiquement de cette configuration.

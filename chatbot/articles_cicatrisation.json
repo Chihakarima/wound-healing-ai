@@ -162,5 +162,258 @@
       "evaluation",
       "quantification"
     ]
+  },
+  {
+    "title": "Research Techniques Made Simple: Analysis of Collective Cell Migration Using the Wound Healing Assay",
+    "abstract": "Collective cell migration is a hallmark of wound repair, cancer invasion and metastasis, immune responses, angiogenesis, and embryonic morphogenesis. Wound healing is a complex cellular and biochemical process necessary to restore structurally damaged tissue. It involves dynamic interactions and crosstalk between various cell types, interaction with extracellular matrix molecules, and regulated production of soluble mediators and cytokines. In cutaneous wound healing, skin cells migrate from the wound edges into the wound to restore skin integrity. Analysis of cell migration in vitro is a useful assay to quantify alterations in cell migratory capacity in response to experimental manipulations. Although several methods exist to study cell migration (such as Boyden chamber assay, barrier assays, and microfluidics-based assays), in this short report we will explain the wound healing assay, also known as the \"in vitro scratch assay\" as a simple, versatile, and cost-effective method to study collective cell migration and wound healing.",
+    "year": 2017,
+    "category": "scratch_assay_principles",
+    "topics": [
+      "scratch_assay",
+      "protocole",
+      "reproductibilite"
+    ]
+  },
+  {
+    "title": "An effective device to enable consistent scratches for in vitro scratch assays",
+    "abstract": "Background: The in-vitro scratch assay is a useful method in wound healing research to assess cell migration. In this assay, a scratch is created in a confluent cell layer by mechanically removing cells through manual scraping with a sharp-edged tool. This step is traditionally done with pipette tips and is unsuitable for high-throughput assays, as the created scratches are highly variable in width and position. Commercially available solutions are often expensive, and require specific cultureware which might not be suitable for all studies. Results: In this study, we have developed a flexible cell scratch device comprising a single wounding tool, a guide and an imaging template for consistent and reproducible scratch assays in 96-well plates. Our results showed that the device produced a more consistent scratch profile compared to the conventional method of using pipette tips. The imaging template also allowed operators to easily locate and image the same region of interest at different time points, which potentially could be used for other assays. Conclusions: Our flexible yet effective scratch device thus enables robust scratch assays that can be applied to different experimental needs, providing researchers with an easy and reliable tool for their studies.",
+    "year": 2023,
+    "category": "scratch_assay_principles",
+    "topics": [
+      "scratch_assay",
+      "protocole",
+      "reproductibilite"
+    ]
+  },
+  {
+    "title": "Comparison of in vitro scratch wound assay experimental procedures",
+    "abstract": "Fibroblast migration is an important aspect of wound healing. Different factors can influence migration and as such proper wound healing. In vitro scratch wound assays are used to examine cellular migration. However, the wide array of techniques available reduces reproducibility of findings. In this paper, we compare two techniques for wound creation; i.e. the exclusion method or scratching of cell monolayers. Furthermore, we investigate if analysis software influences experimental outcome by comparing both commercially and freely available analysis software. Besides, we examine the effect of cortisol on migration behavior of fibroblasts and identify possible caveats in experimental design. Results show a significantly reduced migration of fibroblasts when wounds are created using a cell exclusion method. Furthermore, addition of cortisol to the cell culture media only reduced migration of fibroblast monolayers that had been scratched but not in those where wounds were created using the exclusion method. A possible explanation related to cytokine expression is discussed.",
+    "year": 2023,
+    "category": "scratch_assay_principles",
+    "topics": [
+      "scratch_assay",
+      "protocole",
+      "reproductibilite"
+    ]
+  },
+  {
+    "title": "A Robust and Standardized Approach to Quantify Wound Closure Using the Scratch Assay",
+    "abstract": "The scratch assay is an in vitro assay that allows for high-throughput quantification of wound closure by keratinocytes and fibroblasts with relative ease. However, this assay is amenable to experimental variables, which can result in false-positive and false-negative data, making the interpretation of such data difficult. Also, data variability decreases the sensitivity of the scratch assay. Here, we identify important sources of data variation in the scratch assay and provide rational mitigation strategies that enable robust and highly reproducible quantification of scratch width and area, and ultimately the scratch closure rates. By eliminating these sources of variability, the sensitivity of the scratch assay is enhanced, thereby allowing for identification of dependent variables with wide-ranging impacts on wound closure in a robust and standardized manner.",
+    "year": 2023,
+    "category": "quantification_fermeture",
+    "topics": [
+      "quantification",
+      "fermeture",
+      "mesure_surface"
+    ]
+  },
+  {
+    "title": "An ImageJ plugin for the high throughput image analysis of in vitro scratch wound healing assays",
+    "abstract": "In vitro scratch wound healing assay, a simple and low-cost technique that works along with other image analysis tools, is one of the most widely used 2D methods to determine the cellular migration and proliferation in processes such as regeneration and disease. There are open-source programs such as imageJ to analyze images of in vitro scratch wound healing assays, but these tools require manual tuning of various parameters, which is time-consuming and limits image throughput. For that reason, we developed an optimized plugin for imageJ to automatically recognize the wound healing size, correct the average wound width by considering its inclination, and quantify other important parameters such as: area, wound area fraction, average wound width, and width deviation of the wound images obtained from a scratch/ wound healing assay. Our plugin is easy to install and can be used with different operating systems. It can be adapted to analyze both individual images and stacks. Additionally, it allows the analysis of images obtained from bright field, phase contrast, and fluorescence microscopes. In conclusion, this new imageJ plugin is a robust tool to automatically standardize and facilitate quantification of different in vitro wound parameters with high accuracy compared with other tools and manual identification.",
+    "year": 2020,
+    "category": "quantification_fermeture",
+    "topics": [
+      "quantification",
+      "fermeture",
+      "mesure_surface"
+    ]
+  },
+  {
+    "title": "WoundPy: an improved automatized method for in vitro cell motility investigation based on wound alignment and absolute velocity profiling",
+    "abstract": "The Wound Healing Assay is a standard technique for studying cell motility, yet it faces challenges in reproducibility and data interpretation. Here we present WoundPy, a Python-based executable software featuring a user-friendly interface for semi-automatic, researcher-supervised Region of Interest detection. WoundPy streamlines image analysis and management of replicates, providing rapid graphical outputs. A key pre-processing feature is the automated vertical wound alignment, which eliminates operator-dependent errors typical of optical microscopy. Velocity results are calculated as absolute values from multi-time-point imaging. The software was tested on three datasets from biological experiments, and a comparison with ImageJ Wound Healing Size tool revealed a significant underestimation of the wound area by the latter compared to WoundPy. In conclusion, this new software offers an extremely streamlined approach that easily enables to perform an analysis that is both accurate and fast, drastically reducing the time required for both numerical data acquisition and its subsequent analysis.",
+    "year": 2026,
+    "category": "quantification_fermeture",
+    "topics": [
+      "quantification",
+      "fermeture",
+      "mesure_surface"
+    ]
+  },
+  {
+    "title": "In vitro cell migration quantification method for scratch assays",
+    "abstract": "The scratch assay is an in vitro technique used to assess the contribution of molecular and cellular mechanisms to cell migration. The assay can also be used to evaluate therapeutic compounds before clinical use. Current quantification methods of scratch assays deal poorly with irregular cell-free areas and crooked leading edges which are features typically present in the experimental data. We introduce a new migration quantification method, called 'monolayer edge velocimetry', that permits analysis of low-quality experimental data and better statistical classification of migration rates than standard quantification methods. The new method relies on quantifying the horizontal component of the cell monolayer velocity across the leading edge. By performing a classification test on in silico data, we show that the method exhibits significantly lower statistical errors than standard methods. When applied to in vitro data, our method outperforms standard methods by detecting differences in the migration rates between different cell groups that the other methods could not detect. Application of this new method will enable quantification of migration rates from in vitro scratch assay data that cannot be analysed using existing methods.",
+    "year": 2019,
+    "category": "quantification_fermeture",
+    "topics": [
+      "quantification",
+      "fermeture",
+      "mesure_surface"
+    ]
+  },
+  {
+    "title": "Novel Analytical Platform For Robust Identification of Cell Migration Inhibitors",
+    "abstract": "Wound healing assay is a simple and cost-effective in vitro assay for assessing therapeutic impacts on cell migration. Its key limitation is the possible confoundment by other cellular phenotypes, causing misinterpretation of the experimental outcome. In this study, we attempted to address this problem by developing a simple analytical approach for scoring therapeutic influences on both cell migration and cell death, while normalizing the influence of cell growth using Mitomycin C pre-treatment. By carefully mapping the relationship between cell death and wound closure rate, contribution of cell death and cell migration on the observed wound closure delay can be quantitatively separated at all drug dosing. We showed that both intrinsic cell motility difference and extrinsic factors such as cell seeding density can significantly affect final interpretation of therapeutic impacts on cellular phenotypes. Such discrepancy can be rectified by using the actual wound closure time of each treatment condition for the calculation of phenotypic scores. Finally, we demonstrated a screen for strong pharmaceutical inhibitors of cell migration in cholangiocarcinoma cell lines. Our approach enables accurate scoring of both migrastatic and cytotoxic effects, and can be easily implemented for high-throughput drug screening.",
+    "year": 2020,
+    "category": "migration_proliferation",
+    "topics": [
+      "migration",
+      "proliferation",
+      "mecanismes_biologiques"
+    ]
+  },
+  {
+    "title": "A simple non-perturbing cell migration assay insensitive to proliferation effects",
+    "abstract": "Migration is a fundamental cellular behavior that plays an indispensable role in development and homeostasis, but can also contribute to pathology such as cancer metastasis. Due to its relevance to many aspects of human health, the ability to accurately measure cell migration is of broad interest, and numerous approaches have been developed. One of the most commonly employed approaches, because of its simplicity and throughput, is the exclusion zone assay in which cells are allowed to migrate into an initially cell-free region. A major drawback of this assay is that it relies on simply counting cells in the exclusion zone and therefore cannot distinguish the effects of proliferation from migration. We report here a simple modification to the exclusion zone migration assay that exclusively measures cell migration and is not affected by proliferation. This approach makes use of a lineage-tracing vital stain that is retained through cell generations and effectively reads out migration relative to the original, parental cell population. This modification is simple, robust, non-perturbing, and inexpensive. We validate the method in a panel of cell lines under conditions that inhibit or promote migration and demonstrate its use in normal and cancer cell lines as well as primary cells.",
+    "year": 2016,
+    "category": "migration_proliferation",
+    "topics": [
+      "migration",
+      "proliferation",
+      "mecanismes_biologiques"
+    ]
+  },
+  {
+    "title": "Exploring Cell Migration Mechanisms in Cancer: From Wound Healing Assays to Cellular Automata Models",
+    "abstract": "Purpose: Cell migration is a critical driver of metastatic tumor spread, contributing significantly to cancer-related mortality. Yet, our understanding of the underlying mechanisms remains incomplete. Methods: In this study, a wound healing assay was employed to investigate cancer cell migratory behavior, with the aim of utilizing migration as a biomarker for invasiveness. To gain a comprehensive understanding of this complex system, we developed a computational model based on cellular automata (CA) and rigorously calibrated and validated it using in vitro data, including both tumoral and non-tumoral cell lines. Harnessing this CA-based framework, extensive numerical experiments were conducted and supported by local and global sensitivity analyses in order to identify the key biological parameters governing this process. Results: Our analyses led to the formulation of a power law equation derived from just a few input parameters that accurately describes the governing mechanism of wound healing. This groundbreaking research provides a powerful tool for the pharmaceutical industry. In fact, this approach proves invaluable for the discovery of novel compounds aimed at disrupting cell migration, assessing the efficacy of prospective drugs designed to impede cancer invasion, and evaluating the immune system's responses.",
+    "year": 2023,
+    "category": "migration_proliferation",
+    "topics": [
+      "migration",
+      "proliferation",
+      "mecanismes_biologiques"
+    ]
+  },
+  {
+    "title": "Scratch assay microscopy: A reaction–diffusion equation approach for common instruments and data",
+    "abstract": "Scratch assay is an easy and widely used \"in vitro\" technique to study cell migration and proliferation. In this work we focus on its modelling and on the capability to distinguish between these two phenomena that the simpler and common models are not able to disentangle. We adapted a model based on reaction-diffusion equation for being used with common microscopy instruments/data and therefore taking place in the gap between simpler modelling approaches and complex ones. An optimized image analysis pipeline and numerical least-squares fit provide estimates of the scratch proliferation and diffusion coefficients λ and D. This work is intended as a first of a series in which the model is tested and its robustness and reproducibility are evaluated. Test samples were NIH3T3 cells scratch assays with proliferation and migration stimulated by varying the foetal bovine serum amount in the culture medium (10%, 7.5%, 5% and 2.5%). Results demonstrate, notwithstanding an expected λ-D anticorrelation, the model capability to disentangle them. The 7.5% serum treatment can be identified as the model sensitivity limit. Treat-control λ and D variations showed an intra-experiment reproducibility (~±0.05/h and ~±200μm2/h respectively) consistent with single fit typical uncertainties (~±0.02/h and ~±300μm2/h respectively).",
+    "year": 2020,
+    "category": "migration_proliferation",
+    "topics": [
+      "migration",
+      "proliferation",
+      "mecanismes_biologiques"
+    ]
+  },
+  {
+    "title": "Fiji: an open-source platform for biological-image analysis",
+    "abstract": "Fiji is a distribution of the popular open-source software ImageJ focused on biological-image analysis. Fiji uses modern software engineering practices to combine powerful software libraries with a broad range of scripting languages to enable rapid prototyping of image-processing algorithms. Fiji facilitates the transformation of new algorithms into ImageJ plugins that can be shared with end users through an integrated update system. We propose Fiji as a platform for productive collaboration between computer science and biology research communities.",
+    "year": 2012,
+    "category": "analyse_image_classique",
+    "topics": [
+      "analyse_image",
+      "segmentation_classique",
+      "seuillage"
+    ]
+  },
+  {
+    "title": "AIM: A Computational Tool for the Automatic Quantification of Scratch Wound Healing Assays",
+    "abstract": "Cell invasiveness quantification is of paramount importance in cancer research and is often evaluated in vitro through scratch wound healing assays that determine the rate at which a population of cells fills a gap created in a confluent 2D culture. The quantification of the results of this experiment, however, lacks standardization and is often highly time consuming and user dependent. To overcome these limitations, we have developed AIM (Automatic Invasiveness Measure), a freely-available software tool for the automatic quantification of the cell-free region in scratch wound healing assays. This study will completely describe AIM and will show its equivalence to three analysis methods commonly used for the quantification of the scratch area and the measure of true wound extension. Furthermore, the analysis time and the dependency of the results of these techniques on the structure of the time course (total duration and number of points) will be studied. To the best of our knowledge, AIM is the first entirely-automated analysis method for scratch wound healing assays and represents a significant improvement of this technique both in terms of results' quality and reliability.",
+    "year": 2017,
+    "category": "analyse_image_classique",
+    "topics": [
+      "analyse_image",
+      "segmentation_classique",
+      "seuillage"
+    ]
+  },
+  {
+    "title": "TScratch: a novel and simple software tool for automated analysis of monolayer wound healing assays",
+    "abstract": "Cell migration plays a major role in development, physiology, and disease, and is frequently evaluated in vitro by the monolayer wound healing assay. The assay analysis, however, is a time-consuming task that is often performed manually. In order to accelerate this analysis, we have developed TScratch, a new, freely available image analysis technique and associated software tool that uses the fast discrete curvelet transform to automate the measurement of the area occupied by cells in the images. This tool helps to significantly reduce the time needed for analysis and enables objective and reproducible quantification of assays. The software also offers a graphical user interface which allows easy inspection of analysis results and, if desired, manual modification of analysis parameters. The automated analysis was validated by comparing its results with manual-analysis results for a range of different cell lines. The comparisons demonstrate a close agreement for the vast majority of images that were examined and indicate that the present computational tool can reproduce statistically significant results in experiments with well-known cell migration inhibitors and enhancers.",
+    "year": 2009,
+    "category": "analyse_image_classique",
+    "topics": [
+      "analyse_image",
+      "segmentation_classique",
+      "seuillage"
+    ]
+  },
+  {
+    "title": "U-Net: Convolutional Networks for Biomedical Image Segmentation",
+    "abstract": "There is large consent that successful training of deep networks requires many thousand annotated training samples. In this paper, we present a network and training strategy that relies on the strong use of data augmentation to use the available annotated samples more efficiently. The architecture consists of a contracting path to capture context and a symmetric expanding path that enables precise localization. We show that such a network can be trained end-to-end from very few images and outperforms the prior best method (a sliding-window convolutional network) on the ISBI challenge for segmentation of neuronal structures in electron microscopic stacks. Using the same network trained on transmitted light microscopy images (phase contrast and DIC) we won the ISBI cell tracking challenge 2015 in these categories by a large margin. Moreover, the network is fast. Segmentation of a 512x512 image takes less than a second on a recent GPU. The full implementation (based on Caffe) and the trained networks are available at http://lmb.informatik.uni-freiburg.de/people/ronneber/u-net .",
+    "year": 2015,
+    "category": "deep_learning_segmentation",
+    "topics": [
+      "deep_learning",
+      "segmentation",
+      "u-net"
+    ]
+  },
+  {
+    "title": "An automated in vitro wound healing microscopy image analysis approach utilizing U-net-based deep learning methodology",
+    "abstract": "Background: The assessment of in vitro wound healing images is critical for determining the efficacy of the therapy-of-interest that may influence the wound healing process. Existing methods suffer significant limitations, such as user dependency, time-consuming nature, and lack of sensitivity, thus paving the way for automated analysis approaches. Methods: Hereby, three structurally different variations of U-net architectures based on convolutional neural networks (CNN) were implemented for the segmentation of in vitro wound healing microscopy images. The developed models were fed using two independent datasets after applying a novel augmentation method aimed at the more sensitive analysis of edges after the preprocessing. Then, predicted masks were utilized for the accurate calculation of wound areas. Eventually, the therapy efficacy-indicator wound areas were thoroughly compared with current well-known tools such as ImageJ and TScratch. Results: The average dice similarity coefficient (DSC) scores were obtained as 0.958∼0.968 for U-net-based deep learning models. The averaged absolute percentage errors (PE) of predicted wound areas to ground truth were 6.41%, 3.70%, and 3.73%, respectively for U-net, U-net++, and Attention U-net, while ImageJ and TScratch had considerable averaged error rates of 22.59% and 33.88%, respectively. Conclusions: Comparative analyses revealed that the developed models outperformed the conventional approaches in terms of analysis time and segmentation sensitivity. The developed models also hold great promise for the prediction of the in vitro wound area, regardless of the therapy-of-interest, cell line, magnification of the microscope, or other application-dependent parameters.",
+    "year": 2024,
+    "category": "deep_learning_segmentation",
+    "topics": [
+      "deep_learning",
+      "segmentation",
+      "u-net"
+    ]
+  },
+  {
+    "title": "DeepScratch: Single-cell based topological metrics of scratch wound assays",
+    "abstract": "Changes in tissue architecture and multicellular organisation contribute to many diseases, including cancer and cardiovascular diseases. Scratch wound assay is a commonly used tool that assesses cells' migratory ability based on the area of a wound they cover over a certain time. However, analysis of changes in the organisational patterns formed by migrating cells following genetic or pharmacological perturbations are not well explored in these assays, in part because analysing the resulting imaging data is challenging. Here we present DeepScratch, a neural network that accurately detects the cells in scratch assays based on a heterogeneous set of markers. We demonstrate the utility of DeepScratch by analysing images of more than 232,000 lymphatic endothelial cells. In addition, we propose various topological measures of cell connectivity and local cell density (LCD) to characterise tissue remodelling during wound healing. We show that LCD-based metrics allow classification of CDH5 and CDC42 genetic perturbations that are known to affect cell migration through different biological mechanisms. Such differences cannot be captured when considering only the wound area. Taken together, single-cell detection using DeepScratch allows more detailed investigation of the roles of various genetic components in tissue topology and the biological mechanisms underlying their effects on collective cell migration.",
+    "year": 2020,
+    "category": "deep_learning_segmentation",
+    "topics": [
+      "deep_learning",
+      "segmentation",
+      "u-net"
+    ]
+  },
+  {
+    "title": "TernausNet: U-Net with VGG11 Encoder Pre-Trained on ImageNet for Image Segmentation",
+    "abstract": "Pixel-wise image segmentation is demanding task in computer vision. Classical U-Net architectures composed of encoders and decoders are very popular for segmentation of medical images, satellite images etc. Typically, neural network initialized with weights from a network pre-trained on a large data set like ImageNet shows better performance than those trained from scratch on a small dataset. In some practical applications, particularly in medicine and traffic safety, the accuracy of the models is of utmost importance. In this paper, we demonstrate how the U-Net type architecture can be improved by the use of the pre-trained encoder. Our code and corresponding pre-trained weights are publicly available at https://github.com/ternaus/TernausNet . We compare three weight initialization schemes: LeCun uniform, the encoder with weights from VGG11 and full network trained on the Carvana dataset. This network architecture was a part of the winning solution (1st out of 735) in the Kaggle: Carvana Image Masking Challenge.",
+    "year": 2018,
+    "category": "deep_learning_segmentation",
+    "topics": [
+      "deep_learning",
+      "segmentation",
+      "u-net"
+    ]
+  },
+  {
+    "title": "Embracing imperfect datasets: A review of deep learning solutions for medical image segmentation",
+    "abstract": "The medical imaging literature has witnessed remarkable progress in high-performing segmentation models based on convolutional neural networks. Despite the new performance highs, the recent advanced segmentation models still require large, representative, and high quality annotated datasets. However, rarely do we have a perfect training dataset, particularly in the field of medical imaging, where data and annotations are both expensive to acquire. Recently, a large body of research has studied the problem of medical image segmentation with imperfect datasets, tackling two major dataset limitations: scarce annotations where only limited annotated data is available for training, and weak annotations where the training data has only sparse annotations, noisy annotations, or image-level annotations. In this article, we provide a detailed review of the solutions above, summarizing both the technical novelties and empirical results. We further compare the benefits and requirements of the surveyed methodologies and provide our recommended solutions. We hope this survey article increases the community awareness of the techniques that are available to handle imperfect medical image segmentation datasets.",
+    "year": 2020,
+    "category": "deep_learning_segmentation",
+    "topics": [
+      "deep_learning",
+      "segmentation",
+      "u-net"
+    ]
+  },
+  {
+    "title": "Metrics for evaluating 3D medical image segmentation: analysis, selection, and tool",
+    "abstract": "Background: Medical Image segmentation is an important image processing step. Comparing images to evaluate the quality of segmentation is an essential part of measuring progress in this research area. Some of the challenges in evaluating medical segmentation are: metric selection, the use in the literature of multiple definitions for certain metrics, inefficiency of the metric calculation implementations leading to difficulties with large volumes, and lack of support for fuzzy segmentation by existing metrics. Result: First we present an overview of 20 evaluation metrics selected based on a comprehensive literature review. For fuzzy segmentation, which shows the level of membership of each voxel to multiple classes, fuzzy definitions of all metrics are provided. We present a discussion about metric properties to provide a guide for selecting evaluation metrics. Finally, we propose an efficient evaluation tool implementing the 20 selected metrics. The tool is optimized to perform efficiently in terms of speed and required memory, also if the image size is extremely large as in the case of whole body MRI or CT volume segmentation. An implementation of this tool is available as an open source project. Conclusion: We propose an efficient evaluation tool for 3D medical image segmentation using 20 evaluation metrics and provide guidelines for selecting a subset of these metrics that is suitable for the data and the segmentation task.",
+    "year": 2015,
+    "category": "metrics_evaluation",
+    "topics": [
+      "metriques",
+      "evaluation",
+      "quantification"
+    ]
+  },
+  {
+    "title": "Metrics reloaded: recommendations for image analysis validation",
+    "abstract": "Increasing evidence shows that flaws in machine learning (ML) algorithm validation are an underestimated global problem. In biomedical image analysis, chosen performance metrics often do not reflect the domain interest, and thus fail to adequately measure scientific progress and hinder translation of ML techniques into practice. To overcome this, we created Metrics Reloaded, a comprehensive framework guiding researchers in the problem-aware selection of metrics. Developed by a large international consortium in a multistage Delphi process, it is based on the novel concept of a problem fingerprint-a structured representation of the given problem that captures all aspects that are relevant for metric selection, from the domain interest to the properties of the target structure(s), dataset and algorithm output. On the basis of the problem fingerprint, users are guided through the process of choosing and applying appropriate validation metrics while being made aware of potential pitfalls. Metrics Reloaded targets image analysis problems that can be interpreted as classification tasks at image, object or pixel level, namely image-level classification, object detection, semantic segmentation and instance segmentation tasks. To improve the user experience, we implemented the framework in the Metrics Reloaded online tool. Following the convergence of ML methodology across application domains, Metrics Reloaded fosters the convergence of validation methodology. Its applicability is demonstrated for various biomedical use cases.",
+    "year": 2024,
+    "category": "metrics_evaluation",
+    "topics": [
+      "metriques",
+      "evaluation",
+      "quantification"
+    ]
+  },
+  {
+    "title": "A novel magnet-based scratch method for standardisation of wound-healing assays",
+    "abstract": "A novel magnetic scratch method achieves repeatability, reproducibility and geometric control greater than pipette scratch assays and closely approximating the precision of cell exclusion assays while inducing the cell injury inherently necessary for wound healing assays. The magnetic scratch is affordable, easily implemented and standardisable and thus may contribute toward better comparability of data generated in different studies and laboratories.",
+    "year": 2019,
+    "category": "analyse_temporelle",
+    "topics": [
+      "cinetique",
+      "analyse_temporelle",
+      "points_de_mesure"
+    ]
+  },
+  {
+    "title": "Study of Wound Healing Dynamics by Single Pseudo-Particle Tracking in Phase Contrast Images Acquired in Time-Lapse",
+    "abstract": "Cellular contacts modify the way cells migrate in a cohesive group with respect to a free single cell. The resulting motion is persistent and correlated, with cells' velocities self-aligning in time. The presence of a dense agglomerate of cells makes the application of single particle tracking techniques to define cells dynamics difficult, especially in the case of phase contrast images. Here, we propose an original pipeline for the analysis of phase contrast images of the wound healing scratch assay acquired in time-lapse, with the aim of extracting single particle trajectories describing the dynamics of the wound closure. In such an approach, the membrane of the cells at the border of the wound is taken as a unicum, i.e., the wound edge, and the dynamics is described by the stochastic motion of an ensemble of points on such a membrane, i.e., pseudo-particles. For each single frame, the pipeline of analysis includes: first, a texture classification for separating the background from the cells and for identifying the wound edge; second, the computation of the coordinates of the ensemble of pseudo-particles, chosen to be uniformly distributed along the length of the wound edge. We show the results of this method applied to a glioma cell line (T98G) performing a wound healing scratch assay without external stimuli. We discuss the efficiency of the method to assess cell motility and possible applications to other experimental layouts, such as single cell motion. The pipeline is developed in the Python language and is available upon request.",
+    "year": 2021,
+    "category": "analyse_temporelle",
+    "topics": [
+      "cinetique",
+      "analyse_temporelle",
+      "points_de_mesure"
+    ]
   }
 ]
