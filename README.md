@@ -194,22 +194,25 @@ déjà discutée ci-dessus) et n'est reportée qu'à titre indicatif.
 
 ## Application (Streamlit)
 
-`streamlit run app.py` — trois onglets :
+`streamlit run app.py` — deux onglets :
 1. **Analyse d'une image** : masque, contour, surface (px²/cm²), suppression
    interactive de fragments de masque, prétraitement optionnel (débruitage,
    flat-field, CLAHE), correction manuelle du contour au pinceau, comparaison à
    un masque de référence (Dice, IoU, erreur de surface).
 2. **Suivi de cicatrisation** : suivi temporel multi-images, % de fermeture,
-   courbe, résumé scientifique généré par LLM.
-3. **Assistant IA** : chatbot RAG (ChromaDB + Ollama/mistral) confrontant les
-   résultats de segmentation à la littérature scientifique (articles Semantic
-   Scholar), historique de conversations persistant. Réponse structurée en 4
-   sections (📊 Résultats observés / 🔬 Interprétation / ⚠️ Limites / 📚
-   Littérature, voir `PROMPT_TEMPLATE` dans [chatbot/chatbot.py](chatbot/chatbot.py))
-   pour que le biologiste distingue toujours ce qui est mesuré de ce qui est
-   interprété, avec les mêmes garde-fous que le résumé scientifique ci-dessous
-   (ne jamais inventer une concordance avec la littérature, dire explicitement
-   quand le corpus ne permet pas de conclure).
+   courbe, résumé scientifique généré par LLM, puis un **chat RAG intégré**
+   (ChromaDB + Ollama/mistral) sous le résumé pour poser des questions libres
+   sur ce même résultat — plus de contexte à ressaisir, l'assistant reprend
+   automatiquement les mesures déjà calculées ci-dessus. Réponse structurée en
+   4 sections (📊 Résultats observés / 🔬 Interprétation / ⚠️ Limites / 📚
+   Littérature, voir `PROMPT_TEMPLATE` dans [chatbot/chatbot.py](chatbot/chatbot.py)),
+   avec les mêmes garde-fous que le résumé scientifique ci-dessus (ne jamais
+   inventer une concordance avec la littérature, dire explicitement quand le
+   corpus ne permet pas de conclure). Chat simple, sans historique
+   multi-conversations : une conversation par analyse, non persistée d'une
+   session à l'autre (l'ancien onglet "Assistant IA" séparé, avec historique
+   de conversations sur disque, a été retiré — redondant avec ce chat une
+   fois le résultat déjà disponible dans le même onglet).
 
 ### Base documentaire du RAG
 

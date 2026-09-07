@@ -40,7 +40,6 @@ from metrics import confusion_counts, dice_score, iou_score
 from predict import draw_contour_overlay, load_model, predict_mask
 from preprocess import clean_image
 from chatbot import generer_resume_stream, repondre_stream
-from history import add_message, load_conversations, new_conversation, save_conversations
 
 st.set_page_config(page_title="Segmentation de plaie", page_icon="🩹", layout="wide")
 
@@ -273,8 +272,8 @@ with st.sidebar:
     st.divider()
     st.caption("Ces réglages s'appliquent aux deux onglets.")
 
-tab_single, tab_kinetics, tab_assistant = st.tabs(
-    ["🔬 Analyse d'une image", "📈 Suivi de cicatrisation", "🤖 Assistant IA"]
+tab_single, tab_kinetics = st.tabs(
+    ["🔬 Analyse d'une image", "📈 Suivi de cicatrisation"]
 )
 
 with tab_single:
@@ -584,6 +583,7 @@ with tab_kinetics:
             st.session_state["kinetics_csv_path"] = save_csv(rows, "outputs/kinetics")
             st.session_state["kinetics_plot_path"] = save_plot(rows, "outputs/kinetics")
             st.session_state.pop("kinetics_resume", None)
+            st.session_state["kinetics_chat_messages"] = []
 
         if st.session_state.get("kinetics_rows"):
             rows = st.session_state["kinetics_rows"]
@@ -698,151 +698,47 @@ with tab_kinetics:
                     if sources:
                         st.caption("Sources : " + ", ".join(sources))
 
-with tab_assistant:
-    st.caption(
-        "Posez une question sur un résultat de segmentation : l'assistant compare ce "
-        "résultat à la littérature scientifique sur la cicatrisation (RAG local via "
-        "ChromaDB) et répond en s'appuyant sur un modèle Ollama (mistral). Chaque "
-        "conversation est conservée dans l'historique à gauche, comme dans ChatGPT."
-    )
-
-    st.session_state.setdefault("conversations", load_conversations())
-    st.session_state.setdefault("conversation_id", None)
-
-    col_hist, col_chat = st.columns([1, 3])
-
-    with col_hist:
-        st.session_state.setdefault("renaming_conv_id", None)
-        st.session_state.setdefault("confirm_delete_conv_id", None)
-
-        with st.container(border=True):
-            st.markdown("**💬 Conversations**")
-
-            if st.button("➕ Nouvelle conversation", use_container_width=True, type="primary"):
-                conversations = st.session_state["conversations"]
-                current = next(
-                    (c for c in conversations if c["id"] == st.session_state["conversation_id"]), None
-                )
-                # Si la conversation actuelle est déjà vide et sans titre, inutile
-                # d'en empiler une deuxième identique : on reste dessus.
-                if not (current and not current["messages"] and current["titre"] == "Nouvelle conversation"):
-                    conversation = new_conversation(st.session_state.get("dernier_resultat_segmentation"))
-                    conversations.insert(0, conversation)
-                    st.session_state["conversation_id"] = conversation["id"]
-                    save_conversations(conversations)
-                st.rerun()
-
-            st.divider()
-
-            for conversation in st.session_state["conversations"]:
-                conv_id = conversation["id"]
-                is_current = conv_id == st.session_state["conversation_id"]
-
-                if st.session_state["renaming_conv_id"] == conv_id:
-                    new_title = st.text_input(
-                        "Renommer la conversation", value=conversation["titre"],
-                        key=f"rename_input_{conv_id}", label_visibility="collapsed",
-                    )
-                    r1, r2 = st.columns(2)
-                    if r1.button("✅ Valider", key=f"rename_save_{conv_id}", use_container_width=True):
-                        conversation["titre"] = new_title.strip() or conversation["titre"]
-                        st.session_state["renaming_conv_id"] = None
-                        save_conversations(st.session_state["conversations"])
-                        st.rerun()
-                    if r2.button("✖️ Annuler", key=f"rename_cancel_{conv_id}", use_container_width=True):
-                        st.session_state["renaming_conv_id"] = None
-                        st.rerun()
-
-                elif st.session_state["confirm_delete_conv_id"] == conv_id:
-                    st.caption(f"Supprimer « {conversation['titre']} » ?")
-                    d1, d2 = st.columns(2)
-                    if d1.button("🗑️ Confirmer", key=f"delete_confirm_{conv_id}", use_container_width=True):
-                        st.session_state["conversations"] = [
-                            c for c in st.session_state["conversations"] if c["id"] != conv_id
-                        ]
-                        save_conversations(st.session_state["conversations"])
-                        if st.session_state["conversation_id"] == conv_id:
-                            remaining = st.session_state["conversations"]
-                            st.session_state["conversation_id"] = remaining[0]["id"] if remaining else None
-                        st.session_state["confirm_delete_conv_id"] = None
-                        st.rerun()
-                    if d2.button("✖️ Annuler", key=f"delete_cancel_{conv_id}", use_container_width=True):
-                        st.session_state["confirm_delete_conv_id"] = None
-                        st.rerun()
-
-                else:
-                    row = st.columns([5, 1, 1], gap="small")
-                    label = ("🟢 " if is_current else "💬 ") + conversation["titre"]
-                    if row[0].button(
-                        label, key=f"conv_{conv_id}", use_container_width=True,
-                        type="primary" if is_current else "secondary",
-                    ):
-                        st.session_state["conversation_id"] = conv_id
-                        st.rerun()
-                    if row[1].button("✏️", key=f"rename_{conv_id}", use_container_width=True, help="Renommer"):
-                        st.session_state["renaming_conv_id"] = conv_id
-                        st.session_state["confirm_delete_conv_id"] = None
-                        st.rerun()
-                    if row[2].button("🗑️", key=f"delete_{conv_id}", use_container_width=True, help="Supprimer"):
-                        st.session_state["confirm_delete_conv_id"] = conv_id
-                        st.session_state["renaming_conv_id"] = None
-                        st.rerun()
-
-    with col_chat:
-        if st.session_state["conversation_id"] is None:
-            if st.session_state["conversations"]:
-                st.session_state["conversation_id"] = st.session_state["conversations"][0]["id"]
-            else:
-                conversation = new_conversation(st.session_state.get("dernier_resultat_segmentation"))
-                st.session_state["conversations"].insert(0, conversation)
-                st.session_state["conversation_id"] = conversation["id"]
-                save_conversations(st.session_state["conversations"])
-
-        conversation = next(
-            c for c in st.session_state["conversations"]
-            if c["id"] == st.session_state["conversation_id"]
-        )
-
-        resultat_segmentation = (
-            st.session_state.get("dernier_resultat_segmentation")
-            or conversation.get("resultat_segmentation")
-        )
-
-        if resultat_segmentation is None:
-            st.caption(
-                "💬 Posez une question générale sur la cicatrisation, ou analysez d'abord "
-                "une image dans les onglets précédents pour que l'assistant compare sa "
-                "réponse à un résultat concret."
-            )
-        else:
             with st.container(border=True):
-                st.subheader("📊 Résultat de segmentation associé")
-                st.json(resultat_segmentation)
+                st.subheader("💬 Poser une question sur ce résultat")
+                st.caption(
+                    "L'assistant compare ce résultat à la littérature scientifique sur la "
+                    "cicatrisation (RAG local via ChromaDB) et répond via un modèle Ollama "
+                    "(mistral). Conversation valable pour cette analyse uniquement (non "
+                    "conservée d'une session à l'autre)."
+                )
 
-        for message in conversation["messages"]:
-            with st.chat_message(message["role"]):
-                st.write(message["content"])
-                if message.get("sources"):
-                    st.caption("Sources : " + ", ".join(message["sources"]))
+                st.session_state.setdefault("kinetics_chat_messages", [])
 
-        question = st.chat_input("Votre question...")
+                for message in st.session_state["kinetics_chat_messages"]:
+                    with st.chat_message(message["role"]):
+                        st.write(message["content"])
+                        if message.get("sources"):
+                            st.caption("Sources : " + ", ".join(message["sources"]))
 
-        if question:
-            add_message(conversation, "user", question)
-            with st.chat_message("user"):
-                st.write(question)
+                question = st.chat_input("Votre question...", key="kinetics_chat_input")
 
-            with st.chat_message("assistant"):
-                try:
-                    with st.spinner("Recherche dans la littérature..."):
-                        morceaux, sources = repondre_stream(resultat_segmentation, question)
-                    reponse = st.write_stream(morceaux)
-                except RuntimeError as exc:
-                    st.error(str(exc))
-                    add_message(conversation, "assistant", str(exc))
-                else:
-                    if sources:
-                        st.caption("Sources : " + ", ".join(sources))
-                    add_message(conversation, "assistant", reponse, sources)
+                if question:
+                    st.session_state["kinetics_chat_messages"].append(
+                        {"role": "user", "content": question}
+                    )
+                    with st.chat_message("user"):
+                        st.write(question)
 
-            save_conversations(st.session_state["conversations"])
+                    with st.chat_message("assistant"):
+                        try:
+                            with st.spinner("Recherche dans la littérature..."):
+                                morceaux, sources = repondre_stream(
+                                    st.session_state["dernier_resultat_segmentation"], question
+                                )
+                            reponse = st.write_stream(morceaux)
+                        except RuntimeError as exc:
+                            st.error(str(exc))
+                            st.session_state["kinetics_chat_messages"].append(
+                                {"role": "assistant", "content": str(exc), "sources": []}
+                            )
+                        else:
+                            if sources:
+                                st.caption("Sources : " + ", ".join(sources))
+                            st.session_state["kinetics_chat_messages"].append(
+                                {"role": "assistant", "content": reponse, "sources": sources}
+                            )

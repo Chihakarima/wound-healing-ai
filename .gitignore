@@ -3,19 +3,28 @@ __pycache__/
 .pytest_cache/
 
 # Modèles, données et logs volumineux : à versionner avec DVC plus tard plutôt
-# que de les mettre directement dans git.
+# que de les mettre directement dans git. Regénérables par script si perdus,
+# sans conséquence irréversible : checkpoints (src/train.py), prédictions
+# (src/evaluate.py, src/baseline.py), logs MLflow, index ChromaDB (chatbot/
+# index_articles.py, à partir de articles_cicatrisation.json qui LUI est
+# versionné).
 outputs/checkpoints/
 outputs/predictions/
 outputs/qc_masks/
 outputs/kinetics/
+mlruns/
+mlflow.db
+chatbot/chroma_db/
+
+# ATTENTION - données source IRREMPLAÇABLES, pas de simples artefacts de build :
+# les 97 photos de microscopie originales et leurs annotations manuelles. Aucun
+# script du dépôt ne peut les régénérer si elles sont supprimées (contrairement
+# aux dossiers ci-dessus). Gitignorées uniquement pour éviter un dépôt git
+# volumineux, PAS parce qu'elles seraient jetables - toujours avoir une
+# sauvegarde séparée avant tout nettoyage de dossier touchant à data/.
 data/images/
 data/masques/
 data/masks_binary/
-mlruns/
-mlflow.db
-
-chatbot/chroma_db/
-chatbot/chat_history.json
 
 .streamlit/secrets.toml
 
