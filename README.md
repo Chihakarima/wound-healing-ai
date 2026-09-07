@@ -203,7 +203,13 @@ déjà discutée ci-dessus) et n'est reportée qu'à titre indicatif.
    courbe, résumé scientifique généré par LLM.
 3. **Assistant IA** : chatbot RAG (ChromaDB + Ollama/mistral) confrontant les
    résultats de segmentation à la littérature scientifique (articles Semantic
-   Scholar), historique de conversations persistant.
+   Scholar), historique de conversations persistant. Réponse structurée en 4
+   sections (📊 Résultats observés / 🔬 Interprétation / ⚠️ Limites / 📚
+   Littérature, voir `PROMPT_TEMPLATE` dans [chatbot/chatbot.py](chatbot/chatbot.py))
+   pour que le biologiste distingue toujours ce qui est mesuré de ce qui est
+   interprété, avec les mêmes garde-fous que le résumé scientifique ci-dessous
+   (ne jamais inventer une concordance avec la littérature, dire explicitement
+   quand le corpus ne permet pas de conclure).
 
 ### Base documentaire du RAG
 
