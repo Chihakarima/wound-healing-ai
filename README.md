@@ -246,9 +246,28 @@ correctement les nouveaux articles sur une question formulée en anglais avec le
 vocabulaire technique, mais pas toujours sur la même question posée en français par un
 biologiste (ex : "Mon Dice de 0,882 est-il faible comparé à d'autres études U-Net sur
 scratch assay ?" ne remonte pas l'article de comparaison directe pourtant présent dans le
-corpus). Les articles sont bien indexés et disponibles, mais leur remontée effective dans le
-chat dépend de la formulation de la question — piste identifiée, non résolue dans ce tour de
-travail (voir Perspectives).
+corpus).
+
+**Expérimentation contrôlée réalisée sur cette limite (résultat négatif informatif, pas
+appliqué au projet)** : un embedding multilingue (`paraphrase-multilingual-MiniLM-L12-v2`
+via `SentenceTransformerEmbeddingFunction`) a été testé sur un index ChromaDB temporaire, en
+remplacement de l'embedding par défaut, sur les 37 articles du corpus. Changement de code
+minimal (une ligne dans `index_articles.py`) et réindexation quasi instantanée (1,2 s pour 37
+articles), mais coût de téléchargement initial du modèle d'environ 6-7 minutes (sans clé
+Hugging Face). Résultat mesuré sur les deux questions test :
+- Question sur la distance de Hausdorff : amélioration nette — "Metrics for evaluating 3D
+  medical image segmentation" (Taha & Hanbury) et "Metrics reloaded" remontent désormais
+  correctement, ce qui n'était pas le cas avec l'embedding par défaut.
+- Question sur le Dice/U-Net : amélioration partielle seulement — l'architecture U-Net
+  originale et TernausNet remontent, mais **pas** l'article de comparaison directe (Doğru et
+  al. 2024), le plus pertinent pour cette question précise.
+
+**Conclusion retenue, en toute rigueur expérimentale** : l'embedding multilingue apporte une
+amélioration réelle mais partielle, pas une résolution complète du problème — donc pas un
+correctif validé à intégrer tel quel. Changement non conservé : `sentence-transformers`
+n'a pas été ajouté à `requirements.txt`, et l'index temporaire de test n'a pas été gardé.
+Pistes pour une itération future (voir Perspectives) : un modèle multilingue plus grand
+(`multilingual-e5-base`), ou une recherche hybride mots-clés + embeddings.
 
 ## Ingénierie
 
@@ -303,10 +322,12 @@ pas des manques à corriger dans l'immédiat.
   toutes les catégories prévues (37 articles, voir ci-dessus), mais la recherche sémantique
   par défaut (embeddings ChromaDB orientés anglais) ne remonte pas toujours l'article le plus
   pertinent sur une question posée en français par un biologiste, alors qu'elle le fait sur
-  la même question en anglais avec le bon vocabulaire technique. Piste à évaluer : un modèle
-  d'embedding multilingue (ex. `paraphrase-multilingual-*` de sentence-transformers) en
-  remplacement de la fonction d'embedding par défaut de `chatbot/index_articles.py`, à valider
-  par des tests de récupération avant/après plutôt qu'un changement à l'aveugle.
+  la même question en anglais avec le bon vocabulaire technique. Un premier essai avec un
+  embedding multilingue a déjà été mené (voir section Base documentaire du RAG ci-dessus) :
+  amélioration partielle mais pas suffisante pour être adoptée telle quelle. Pistes pour une
+  itération plus poussée : un modèle multilingue plus grand (`multilingual-e5-base`), une
+  recherche hybride mots-clés + embeddings, ou l'augmentation de `n_results` — chacune à
+  valider par les mêmes tests de récupération avant/après, pas par un changement à l'aveugle.
 - **Hyperparameter tuning** : un seul run MLflow tracé à ce jour (voir Ingénierie) ; tester
   d'autres encodeurs/`img_size`/learning rates permettrait de savoir si `unet_resnet34_holdout`
   est déjà un optimum local ou s'il reste de la marge.
