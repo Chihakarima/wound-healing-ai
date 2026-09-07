@@ -617,6 +617,7 @@ with tab_kinetics:
                       help="Fermeture finale divisée par la durée observée : une vitesse moyenne "
                            "(points de % par heure) sur toute la période, pas une vitesse "
                            "instantanée ni une valeur mesurée à chaque instant.")
+            st.caption(f"📏 Interprétation basée sur {len(rows)} mesure(s) — voir le détail ci-dessous.")
 
             temps_mesures = ", ".join(f"{row['time_h']:g}h" for row in rows)
             st.caption(
