@@ -314,9 +314,16 @@ est mesuré, ce qui est calculé, ce qui reste prudent, et ce qui vient de la li
   images issues d'un scratch assay montre une diminution de la surface non colonisée".
 
 **Analyse quantitative**
-- 1 à 2 phrases sur la vitesse moyenne de fermeture (depuis la synthèse chiffrée) et sur quel
-  intervalle a le taux moyen le plus élevé / le plus faible (depuis les vitesses par intervalle
-  ci-dessus), sans te contenter de répéter les chiffres déjà visibles dans le tableau du biologiste.
+- Cite TOUJOURS le taux moyen de fermeture sur l'ensemble de la période (depuis la synthèse
+  chiffrée), même si tu détailles ensuite les taux par intervalle : ne le laisse jamais implicite
+  ou absent. Précise aussi quel intervalle a le taux le plus élevé / le plus faible (depuis les
+  vitesses par intervalle ci-dessus), sans te contenter de répéter les chiffres déjà visibles dans
+  le tableau du biologiste.
+- S'il y a au moins 2 intervalles aux taux différents, relie explicitement le taux moyen global aux
+  taux par intervalle en une phrase, par exemple : "le taux moyen sur l'ensemble de la période
+  ([vitesse_moyenne]%/h) masque cette hétérogénéité." Sans cette phrase, un lecteur qui compare le
+  résumé au tableau des mesures peut croire à un oubli plutôt qu'à un choix de présentation.
+- 2 à 3 phrases au total pour cette section.
 - IMPORTANT : chaque vitesse en %/h que tu écris doit être copiée mot pour mot depuis la section
   "Vitesse de fermeture par intervalle" ci-dessus (ou depuis la synthèse chiffrée pour la vitesse
   moyenne) : ce sont les deux seuls endroits de ce prompt qui font autorité sur les vitesses.
@@ -326,17 +333,20 @@ est mesuré, ce qui est calculé, ce qui reste prudent, et ce qui vient de la li
 
 **Interprétation prudente**
 - Explique ce que ce calcul permet réellement de dire : les vitesses par intervalle ne comparent
-  que des taux moyens entre intervalles (un intervalle dont le taux moyen est plus élevé/plus
-  faible qu'un autre), ça ne démontre ni ne mesure une accélération ou un ralentissement
-  biologique de la cicatrisation (ça supposerait des mesures à l'intérieur de chaque intervalle,
-  qu'on n'a pas) ; utilise le patron "le taux moyen de fermeture estimé sur l'intervalle
-  [T_debut]-[T_fin]h ([vitesse]%/h) est supérieur à celui estimé sur l'intervalle [T_debut]-[T_fin]h
-  ([vitesse]%/h). Cette différence décrit uniquement les mesures disponibles et ne permet pas, à
-  elle seule, de conclure à une accélération biologique de la cicatrisation." EN REPRENANT LES
-  BORNES ET VITESSES EXACTES DE LA SECTION "Vitesse de fermeture par intervalle" CI-DESSUS, jamais
-  des valeurs numériques différentes ; n'écris JAMAIS les mots "accélération", "accéléré",
-  "ralentissement" ou "ralenti" au sujet de la cicatrisation elle-même, et n'écris jamais que "la
-  plaie cicatrise plus vite/plus lentement",
+  que des taux moyens entre intervalles, ça ne démontre ni ne mesure une accélération ou un
+  ralentissement biologique de la cicatrisation (ça supposerait des mesures à l'intérieur de
+  chaque intervalle, qu'on n'a pas). S'il y a une ligne "Intervalle le plus rapide / le plus lent"
+  dans la section "Vitesse de fermeture par intervalle" ci-dessus, REPRENDS-LA TELLE QUELLE dans
+  cet ordre (le plus rapide en premier) : n'inverse jamais cet ordre et ne recalcule/ne compare
+  jamais toi-même quel intervalle est le plus rapide, cette ligne fait seule autorité. Utilise le
+  patron "le taux moyen de fermeture estimé sur l'intervalle [bornes du plus rapide]
+  ([vitesse du plus rapide]%/h) est supérieur à celui estimé sur l'intervalle [bornes du plus lent]
+  ([vitesse du plus lent]%/h). Cette différence décrit uniquement les mesures disponibles et ne
+  permet pas, à elle seule, de conclure à une accélération biologique de la cicatrisation." EN
+  REPRENANT LES BORNES ET VITESSES EXACTES DE LA SECTION "Vitesse de fermeture par intervalle"
+  CI-DESSUS, jamais des valeurs numériques différentes ; n'écris JAMAIS les mots "accélération",
+  "accéléré", "ralentissement" ou "ralenti" au sujet de la cicatrisation elle-même, et n'écris
+  jamais que "la plaie cicatrise plus vite/plus lentement",
 - rappelle en une phrase que ce résumé décrit une évolution globale sur un nombre de mesures
   limité (voir "Nombre de mesures" dans la synthèse ci-dessus), pas une cinétique fine,
 - n'affirme jamais une tendance qui contredirait les vitesses par intervalle fournies ci-dessus.
@@ -358,7 +368,7 @@ est mesuré, ce qui est calculé, ce qui reste prudent, et ce qui vient de la li
   approximatif avec un article qui ne correspond pas, et plutôt que de compléter avec des
   connaissances supposées non présentes dans les extraits ci-dessus.
 
-Reste factuel et concis (5 à 8 phrases au total sur les 4 sections), sans réclamer d'information
+Reste factuel et concis (5 à 9 phrases au total sur les 4 sections), sans réclamer d'information
 supplémentaire au biologiste.
 
 RÈGLE GLOBALE VALABLE DANS LES 4 SECTIONS CI-DESSUS, PAS SEULEMENT DANS "Interprétation prudente" \
