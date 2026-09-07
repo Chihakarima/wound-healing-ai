@@ -609,10 +609,10 @@ with tab_kinetics:
                       help="Par rapport à la surface de la plaie au premier temps de la série.")
             s2.metric("Durée observée", f"{duration_h:.0f} h",
                       help="Écart entre le premier et le dernier temps de la série.")
-            s3.metric("Taux moyen de fermeture", f"{avg_speed:.2f} %/h" if avg_speed is not None else "—",
-                      help="Fermeture finale divisée par la durée observée : un taux moyen sur "
-                           "toute la période, pas une vitesse instantanée ni une valeur mesurée "
-                           "à chaque instant.")
+            s3.metric("Vitesse moyenne de fermeture", f"{avg_speed:.2f} %/h" if avg_speed is not None else "—",
+                      help="Fermeture finale divisée par la durée observée : une vitesse moyenne "
+                           "(points de % par heure) sur toute la période, pas une vitesse "
+                           "instantanée ni une valeur mesurée à chaque instant.")
 
             temps_mesures = ", ".join(f"{row['time_h']:g}h" for row in rows)
             st.caption(

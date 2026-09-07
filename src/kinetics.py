@@ -111,7 +111,7 @@ def build_figure(rows):
     ax.plot(times, closures, marker="o")
     ax.set_xlabel("Temps (h)")
     ax.set_ylabel("Fermeture de la plaie (%)")
-    ax.set_title("Cinétique de cicatrisation")
+    ax.set_title(f"Évolution de la fermeture de la plaie ({len(rows)} temps de mesure)")
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
     return fig

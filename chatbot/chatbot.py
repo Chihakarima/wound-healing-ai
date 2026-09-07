@@ -293,9 +293,10 @@ Vitesse de fermeture par intervalle, déjà calculée par le pipeline (sers-t'en
 vitesses moyennes entre intervalles, sans recalculer ces vitesses toi-même) :
 {intervalles}
 
-Phrase de liaison entre le taux moyen global et l'hétérogénéité par intervalle, déjà composée \
-par le pipeline (à reprendre mot pour mot dans "Analyse quantitative" si elle contient une vraie \
-phrase ; si elle est entre parenthèses, ne la reprends pas et n'en invente pas d'équivalent) :
+Phrase de liaison entre la vitesse moyenne globale et l'hétérogénéité par intervalle, déjà \
+composée par le pipeline (à reprendre mot pour mot dans "Analyse quantitative" si elle contient \
+une vraie phrase ; si elle est entre parenthèses, ne la reprends pas et n'en invente pas \
+d'équivalent) :
 {phrase_heterogeneite}
 
 Détail des mesures par point de temps (pour décrire la tendance point par point uniquement) :
@@ -320,15 +321,15 @@ est mesuré, ce qui est calculé, ce qui reste prudent, et ce qui vient de la li
   images issues d'un scratch assay montre une diminution de la surface non colonisée".
 
 **Analyse quantitative**
-- Cite TOUJOURS le taux moyen de fermeture sur l'ensemble de la période (depuis la synthèse
-  chiffrée), même si tu détailles ensuite les taux par intervalle : ne le laisse jamais implicite
-  ou absent. Précise aussi quel intervalle a le taux le plus élevé / le plus faible (depuis les
+- Cite TOUJOURS la vitesse moyenne de fermeture sur l'ensemble de la période (depuis la synthèse
+  chiffrée), même si tu détailles ensuite les taux par intervalle : ne la laisse jamais implicite
+  ou absente. Précise aussi quel intervalle a le taux le plus élevé / le plus faible (depuis les
   vitesses par intervalle ci-dessus), sans te contenter de répéter les chiffres déjà visibles dans
   le tableau du biologiste.
 - Si la "Phrase de liaison" ci-dessus contient une vraie phrase (pas une note entre parenthèses),
   REPRENDS-LA MOT POUR MOT dans cette section, sans changer un seul chiffre et sans la recomposer
-  toi-même : ne recopie jamais le taux d'un intervalle à la place du taux moyen global dans cette
-  phrase, cette phrase fait seule autorité sur ce point précis. Sans elle, un lecteur qui compare le
+  toi-même : ne recopie jamais le taux d'un intervalle à la place de la vitesse moyenne globale dans
+  cette phrase, cette phrase fait seule autorité sur ce point précis. Sans elle, un lecteur qui compare le
   résumé au tableau des mesures peut croire à un oubli plutôt qu'à un choix de présentation. Si elle
   est entre parenthèses, n'invente pas de comparaison d'hétérogénéité à la place.
 - 2 à 3 phrases au total pour cette section.
@@ -441,8 +442,8 @@ def _format_synthese(synthese: dict, n_mesures: int) -> str:
         f"- Surface finale (T = {_fr(t_final['time_h'])}h) : {_surface(t_final)}",
         f"- Fermeture finale : {_fr(synthese['fermeture_finale_pct'])}% par rapport à T0",
         f"- Durée totale d'observation : {_fr(synthese['duree_h'])}h",
-        f"- Taux moyen de fermeture sur la période observée : {_fr(synthese['vitesse_moyenne_pct_h'])}%/h "
-        "(pas une vitesse instantanée)",
+        f"- Vitesse moyenne de fermeture sur la période observée : {_fr(synthese['vitesse_moyenne_pct_h'])}%/h "
+        "(points de % par heure, pas une vitesse instantanée)",
     ])
 
 
@@ -506,7 +507,7 @@ def _phrase_heterogeneite(synthese: dict, intervalles: list[dict]) -> str:
         return "(taux identique sur tous les intervalles : pas d'hétérogénéité à signaler)"
 
     return (
-        f"Le taux moyen de fermeture sur l'ensemble de la période "
+        f"La vitesse moyenne de fermeture sur l'ensemble de la période "
         f"({_fr(synthese['vitesse_moyenne_pct_h'])}%/h) masque cette hétérogénéité : le taux "
         f"estimé est plus élevé sur l'intervalle {_fr(plus_rapide['t_debut'])}h-{_fr(plus_rapide['t_fin'])}h "
         f"({_fr(plus_rapide['vitesse_pct_h'])}%/h) que sur l'intervalle "
