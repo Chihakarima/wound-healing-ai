@@ -269,6 +269,42 @@ n'a pas été ajouté à `requirements.txt`, et l'index temporaire de test n'a p
 Pistes pour une itération future (voir Perspectives) : un modèle multilingue plus grand
 (`multilingual-e5-base`), ou une recherche hybride mots-clés + embeddings.
 
+### Fiabilité de la génération par LLM
+
+Plusieurs tests en direct du résumé scientifique (`generer_resume_stream`, onglet Suivi de
+cicatrisation) ont révélé que mistral 7B (modèle local, sans garantie de suivi d'instruction)
+pouvait confondre le taux d'un intervalle avec le taux moyen global, inventer un nombre de
+mesures ne correspondant à aucune donnée fournie, ou une fois fabriquer des citations
+complètes absentes des extraits fournis. Ces erreurs ont été corrigées non pas en renforçant
+les consignes de la section où le LLM se trompait, mais en déplaçant chaque chiffre critique
+vers la section où le LLM s'est montré fiable à la copie littérale ("Résultats observés") —
+ou en le pré-calculant entièrement dans le code (`_phrase_heterogeneite`) pour qu'il n'ait
+plus qu'à le recopier mot pour mot.
+
+**Limite de robustesse du prompt (expérience isolée).** Une variante de prompt a ensuite été
+testée pour améliorer la section "Mise en contexte scientifique" (expliquer ce que le corpus
+couvre en général plutôt qu'un simple rejet). Cette variante, qui introduisait un patron
+ouvert avec des champs à compléter librement (`[sujet général...]`, `[durée]h`), a provoqué
+une dégradation de la fiabilité de **tout le résumé**, pas seulement de cette section : sur 3
+générations consécutives, des surfaces fabriquées (87 646 px², 72 761 px² au lieu de
+56 758 px²) et des bornes d'intervalle inexistantes (32h-48h, 0h-8h) sont apparues — alors que
+cette nouvelle consigne, elle, ne s'est jamais mal exécutée. Un test d'isolation (même prompt,
+seule cette consigne remise à sa version courte) a confirmé que la régression venait de cette
+modification précise, pas d'un changement terminologique effectué en parallèle ni d'une
+défaillance ponctuelle du modèle : 2/2 générations à nouveau correctes immédiatement après le
+retour arrière. La variante a été retirée ; le prompt précédent a été conservé après
+vérification des valeurs produites.
+
+Cette expérience montre qu'avec le modèle local utilisé, l'ajout de consignes plus complexes
+peut dégrader des parties du comportement précédemment fiables, pas seulement échouer sur son
+propre objectif. Toute modification du prompt est donc désormais validée par plusieurs
+générations réelles avant d'être conservée, jamais supposée correcte après une seule lecture
+du texte produit. [tests/test_chatbot_llm_regression.py](tests/test_chatbot_llm_regression.py)
+verrouille cette exigence : il génère un résumé réel (Ollama requis, ignoré automatiquement
+sinon, y compris en CI) sur des mesures connues et vérifie que le texte contient les valeurs
+calculées par le pipeline et ne contient aucune des valeurs fabriquées observées pendant le
+développement.
+
 ## Ingénierie
 
 - **Docker** : image CPU-only (wheels torch CPU explicites), `docker-compose.yml`
@@ -290,7 +326,8 @@ Pistes pour une itération future (voir Perspectives) : un modèle multilingue p
   Les 3 derniers runs sont l'étude multi-seed de robustesse (voir Résultats ci-dessus) ; même
   configuration que `unet_resnet34_holdout`, split et initialisation régénérés par seed. Pas
   encore d'autre configuration (encodeur/img_size/lr) testée — voir Perspectives.
-- **Tests** (`tests/`) : mesures, métriques, synthèse chatbot.
+- **Tests** (`tests/`) : mesures, métriques, synthèse chatbot, régression LLM (Ollama requis,
+  auto-ignorée sinon).
 
 ### Ce qui n'est volontairement pas fait
 
