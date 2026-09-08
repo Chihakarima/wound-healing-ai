@@ -13,6 +13,31 @@ subjectif) par une mesure automatique reproductible, tout en évaluant sérieuse
 si le gain en précision/temps justifie l'usage du deep learning par rapport à une
 méthode classique de traitement d'image.
 
+Concrètement : transformer automatiquement des images de scratch assay en mesures
+quantitatives de fermeture de plaie, puis contextualiser ces résultats à l'aide d'un
+LLM connecté à la littérature scientifique. Le LLM intervient uniquement en aval des
+mesures calculées et ne réalise ni segmentation, ni mesure d'image, ni diagnostic.
+
+```
+Image de plaie
+      ↓
+Segmentation automatique
+(U-Net + ResNet34)
+      ↓
+Quantification de la surface
+(px² / cm²)
+      ↓
+Suivi temporel
+(0 h / 24 h / 48 h / ...)
+      ↓
+Analyse de la cinétique de fermeture
+      ↓
+Interprétation scientifique
+      ↓
+LLM + RAG
+(littérature scientifique)
+```
+
 ## Portée et limites d'usage
 
 Ce projet est un **outil de quantification d'image** (surface de plaie, % de
