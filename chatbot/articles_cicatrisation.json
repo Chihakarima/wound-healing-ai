@@ -415,5 +415,18 @@
       "analyse_temporelle",
       "points_de_mesure"
     ]
+  },
+  {
+    "title": "SCRATCH: A programmable, open-hardware, benchtop robot that automatically scratches cultured tissues to investigate cell migration, healing, and tissue sculpting",
+    "abstract": "Despite the widespread popularity of the ‘scratch assay’, where a pipette is dragged through cultured tissue to create an injury gap to study cell migration and healing, the manual nature of the assay carries significant drawbacks. So much of the process depends on individual manual technique, which can complicate quantification, reduce throughput, and limit the versatility and reproducibility of the approach. Here, we present a truly open-source, low-cost, accessible, and robotic scratching platform that addresses all of the core issues. Compatible with nearly all standard cell culture dishes and usable directly in a sterile culture hood, our robot makes highly reproducible scratches in a variety of complex cultured tissues with high throughput. Moreover, we demonstrate how scratching can be programmed to precisely remove areas of tissue to sculpt arbitrary tissue and wound shapes, as well as enable truly complex co-culture experiments. This system significantly improves the usefulness of the conventional scratch assay, and opens up new possibilities in complex tissue engineering and cell biological assays for realistic wound healing and migration research.",
+    "year": 2024,
+    "category": "scratch_assay_principles",
+    "topics": [
+      "scratch_assay",
+      "principes",
+      "limites",
+      "protocole",
+      "reproductibilite"
+    ]
   }
 ]

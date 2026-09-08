@@ -9,9 +9,12 @@ Usage:
     python chatbot/chatbot.py
 """
 import queue
+import re
 import sys
 import threading
 import time
+import unicodedata
+from difflib import SequenceMatcher
 from pathlib import Path
 
 import ollama
@@ -207,6 +210,52 @@ def _stream_ollama(prompt: str):
     return morceaux()
 
 
+# Repère les citations entre guillemets (français « » ou droits/courbes "..."/"...")
+# assez longues pour être un titre d'article plutôt qu'un mot mis en emphase.
+_CITATION_RE = re.compile(r"[«\"“]([^»\"”]{15,300})[»\"”]")
+SEUIL_SIMILARITE_CITATION = 0.7  # ratio SequenceMatcher au-dessus duquel deux titres sont "le même"
+
+
+def _normaliser_titre(texte: str) -> str:
+    """Normalise un titre pour la comparaison : enlève les accents/diacritiques
+    (variantes unicode entre le titre stocké et sa recopie par le LLM), casse et
+    espaces superflus."""
+    texte = unicodedata.normalize("NFKD", texte)
+    texte = "".join(c for c in texte if not unicodedata.combining(c))
+    return " ".join(texte.lower().split())
+
+
+def detecter_citations_suspectes(texte: str, sources: list[str]) -> list[str]:
+    """Repère, dans un texte déjà généré, les citations entre guillemets qui ne
+    correspondent à aucun des titres réellement retournés par le retrieval
+    (`sources`) -- signe qu'un titre a été inventé par le LLM plutôt que recopié
+    depuis le contexte fourni (observé en usage réel : un titre plausible mais
+    absent du corpus, voir chatbot_prompt_fragility en mémoire projet).
+
+    Vérification purement programmatique APRÈS génération : ne modifie ni le
+    prompt ni la génération elle-même, donc n'ajoute aucun des risques déjà
+    documentés (toute modification du contexte/prompt doit être validée par un
+    test d'isolation ; une simple relecture du texte produit n'a pas cette
+    contrainte).
+
+    Retourne la liste des citations suspectes trouvées dans `texte` (vide si
+    aucune, y compris si `texte` ne contient aucune citation entre guillemets).
+    """
+    sources_norm = [_normaliser_titre(s) for s in sources]
+    suspectes = []
+    for citation in _CITATION_RE.findall(texte):
+        citation_norm = _normaliser_titre(citation)
+        correspond_a_une_source = any(
+            citation_norm in source_norm
+            or source_norm in citation_norm
+            or SequenceMatcher(None, citation_norm, source_norm).ratio() >= SEUIL_SIMILARITE_CITATION
+            for source_norm in sources_norm
+        )
+        if not correspond_a_une_source:
+            suspectes.append(citation.strip())
+    return suspectes
+
+
 LONGUEUR_MIN_QUESTION = 8  # en dessous, ce n'est pas une vraie question (salutation, faute de frappe...)
 
 REPONSE_SALUTATION = (
@@ -226,7 +275,13 @@ def _question_triviale(question: str) -> bool:
 
 
 def _construire_prompt(resultat_segmentation: dict | None, question: str, n_articles: int):
-    articles = chercher(question, n=n_articles)
+    # hybride=False (décision finale, 2026-09-08) : activé un temps sur demande
+    # explicite malgré un risque mesuré (voir chatbot_prompt_fragility en mémoire
+    # projet), puis revenu en arrière après reconsidération -- pour un usage
+    # scientifique sérieux, le risque de chiffres fabriqués l'emporte sur le gain
+    # de retrieval. Le mode hybride reste disponible et validé pour le retrieval
+    # seul (voir evaluate_retrieval.py), pas pour la génération.
+    articles = chercher(question, n=n_articles, hybride=False)
     prompt = PROMPT_TEMPLATE.format(
         resultat_segmentation=_format_resultat(resultat_segmentation),
         question=question,
@@ -524,8 +579,38 @@ def generer_resume_stream(rows: list[dict], n_articles: int = 3):
 
     Retourne (générateur de morceaux de texte, sources).
     """
-    requete_litterature = "wound healing scratch assay closure rate over time cell migration"
-    articles = chercher(requete_litterature, n=n_articles)
+    # Reformulée le 2026-09-08 (voir chatbot_prompt_fragility, mémoire projet) : la
+    # requête d'origine ("wound healing scratch assay closure rate over time cell
+    # migration") ne retrouvait aucun article de la catégorie analyse_temporelle
+    # dans le top 10, forçant systématiquement la section "Mise en contexte
+    # scientifique" à répondre qu'elle ne peut rien dire -- honnête, mais peu
+    # informatif. Ce vocabulaire, repris des résumés d'articles ciblés, retrouve
+    # "Study of Wound Healing Dynamics by Single Pseudo-Particle Tracking..." au
+    # rang 2. Isolation-testée 3/3 propre, gardée.
+    #
+    # Une 2e itération a aussi été essayée (vocabulaire repris de "The Frequent
+    # Sampling of Wound Scratch Assay...", qui plaçait CE second article et le
+    # précédent aux rangs 1 et 2 -- meilleur retrieval sur le papier) mais 3/3
+    # générations ont alors fabriqué la vitesse moyenne et les vitesses par
+    # intervalle (ex: 7,2%/h puis 0%/h au lieu de 0,83%/h et 1,58%/h) : cet article
+    # contient lui-même beaucoup de chiffres de vitesse/cinétique dans son propre
+    # résumé (fenêtre de 6h, doses de drogues, % de diminution de vitesse), ce qui
+    # semble amener le LLM à les confondre avec les données de l'utilisateur.
+    # Non gardée -- un meilleur retrieval n'implique pas une génération plus fiable.
+    requete_litterature = (
+        "wound healing assay reproducibility standardisation kinetics time-lapse "
+        "phase contrast tracking cell migration dynamics"
+    )
+    # hybride=False (décision finale, 2026-09-08) : un test d'isolation avait
+    # montré 3/3 générations en hybride fabriquant des bornes d'intervalle et un
+    # taux de fermeture inexistants (ex: "36-48h", alors que ROWS n'a que
+    # 0/24/48h) contre 2/3 correctes en embeddings seuls -- activé un temps sur
+    # demande explicite malgré ce risque, puis revenu en arrière après
+    # reconsidération (voir chatbot_prompt_fragility, mémoire projet) : pour un
+    # usage scientifique sérieux, le risque de chiffres fabriqués l'emporte sur
+    # le gain de retrieval. Mode hybride gardé uniquement comme option validée
+    # pour les métriques de retrieval (voir evaluate_retrieval.py).
+    articles = chercher(requete_litterature, n=n_articles, hybride=False)
 
     synthese = _calculer_synthese(rows)
     intervalles = _calculer_intervalles(rows)

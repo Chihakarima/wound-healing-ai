@@ -12,5 +12,6 @@ pillow
 scipy
 requests
 chromadb
+rank_bm25
 ollama
 mlflow

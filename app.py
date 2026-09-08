@@ -39,7 +39,7 @@ from measure import area_px_to_cm2, extract_contours, wound_area_px
 from metrics import confusion_counts, dice_score, iou_score
 from predict import draw_contour_overlay, load_model, predict_mask
 from preprocess import clean_image
-from chatbot import generer_resume_stream, repondre_stream
+from chatbot import detecter_citations_suspectes, generer_resume_stream, repondre_stream
 
 st.set_page_config(page_title="Segmentation de plaie", page_icon="🩹", layout="wide")
 
@@ -202,6 +202,20 @@ def read_mask(uploaded_file, shape_hw):
     mask = cv2.imdecode(data, cv2.IMREAD_GRAYSCALE)
     mask = cv2.resize(mask, (shape_hw[1], shape_hw[0]), interpolation=cv2.INTER_NEAREST)
     return (mask > 127).astype(np.uint8)
+
+
+def afficher_citations_suspectes(citations_suspectes):
+    """Avertissement affiché quand le texte généré par le chatbot cite un titre
+    d'article absent des sources réellement retrouvées (détection purement
+    programmatique après génération, voir chatbot.detecter_citations_suspectes
+    et chatbot_prompt_fragility en mémoire projet -- ne modifie ni ne re-génère
+    rien, se contente de signaler)."""
+    if citations_suspectes:
+        st.warning(
+            "⚠️ Citation(s) potentiellement inventée(s) — absente(s) des sources listées "
+            "ci-dessous, à vérifier avant réutilisation : "
+            + ", ".join(f"« {c} »" for c in citations_suspectes)
+        )
 
 
 def to_pil(image_bgr):
@@ -691,10 +705,14 @@ with tab_kinetics:
                         with st.spinner("Génération du résumé (peut prendre 1 à 2 minutes)..."):
                             morceaux, sources = generer_resume_stream(rows)
                             resume = "".join(morceaux)
+                        citations_suspectes = detecter_citations_suspectes(resume, sources)
                         st.write(resume)
                         if sources:
                             st.caption("Sources : " + ", ".join(sources))
-                        st.session_state["kinetics_resume"] = {"texte": resume, "sources": sources}
+                        afficher_citations_suspectes(citations_suspectes)
+                        st.session_state["kinetics_resume"] = {
+                            "texte": resume, "sources": sources, "citations_suspectes": citations_suspectes,
+                        }
                     except RuntimeError as exc:
                         st.error(str(exc))
                 elif st.session_state.get("kinetics_resume"):
@@ -702,6 +720,7 @@ with tab_kinetics:
                     sources = st.session_state["kinetics_resume"]["sources"]
                     if sources:
                         st.caption("Sources : " + ", ".join(sources))
+                    afficher_citations_suspectes(st.session_state["kinetics_resume"].get("citations_suspectes"))
 
             with st.container(border=True):
                 st.subheader("💬 Poser une question sur ce résultat")
@@ -724,6 +743,7 @@ with tab_kinetics:
                         st.write(message["content"])
                         if message.get("sources"):
                             st.caption("Sources : " + ", ".join(message["sources"]))
+                        afficher_citations_suspectes(message.get("citations_suspectes"))
 
                 question = st.chat_input("Votre question...", key="kinetics_chat_input")
 
@@ -747,8 +767,13 @@ with tab_kinetics:
                                 {"role": "assistant", "content": str(exc), "sources": []}
                             )
                         else:
+                            citations_suspectes = detecter_citations_suspectes(reponse, sources)
                             if sources:
                                 st.caption("Sources : " + ", ".join(sources))
+                            afficher_citations_suspectes(citations_suspectes)
                             st.session_state["kinetics_chat_messages"].append(
-                                {"role": "assistant", "content": reponse, "sources": sources}
+                                {
+                                    "role": "assistant", "content": reponse, "sources": sources,
+                                    "citations_suspectes": citations_suspectes,
+                                }
                             )

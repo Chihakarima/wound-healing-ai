@@ -45,7 +45,14 @@ VALEURS_ATTENDUES = ["94229", "56758", "39,8", "0,83", "1,58", "0,07"]
 
 # Valeurs fabriquées observées en pratique lors des régressions corrigées cette session -
 # ne doivent plus jamais apparaître, quelle que soit la formulation du prompt.
-VALEURS_FABRIQUEES_CONNUES = ["87646", "72761", "32h-48h", "0h-8h", "40-48h", "24-40h"]
+# Le groupe ci-dessous (36-48h, 0-36h, 40,0/40,1/40,47 %) vient de l'isolation test du
+# 2026-09-08 sur chercher(hybride=True) : voir chatbot_prompt_fragility (mémoire projet)
+# et generer_resume_stream ci-dessus (hybride=True gardé malgré ce risque, sur demande
+# explicite -- ce test sert de garde-fou si l'hallucination redevient fréquente).
+VALEURS_FABRIQUEES_CONNUES = [
+    "87646", "72761", "32h-48h", "0h-8h", "40-48h", "24-40h",
+    "36-48 heures", "36 heures", "0-36 heures", "40,47", "40,0 %", "40,1%",
+]
 
 
 @pytest.mark.skipif(not _ollama_disponible(), reason="Ollama non disponible localement")

@@ -277,7 +277,7 @@ déjà discutée ci-dessus) et n'est reportée qu'à titre indicatif.
 
 ### Base documentaire du RAG
 
-37 articles sélectionnés manuellement (`chatbot/articles_cicatrisation.json`), et non
+38 articles sélectionnés manuellement (`chatbot/articles_cicatrisation.json`), et non
 100+ articles récupérés automatiquement sans tri : chaque candidat a été examiné (titre +
 résumé officiel vérifié à la source) et retenu ou rejeté selon sa pertinence réelle pour le
 projet, avec la décision et la raison tracées dans
@@ -285,7 +285,10 @@ projet, avec la décision et la raison tracées dans
 `category` (voir `chatbot/index_articles.py`).
 
 Couverture actuelle :
-- ✅ Principes, limites et protocole du scratch assay (6)
+- ✅ Principes, limites et protocole du scratch assay (7) — dont un dispositif open-source
+  robotisé qui standardise la technique manuelle du scratch (source d'irreproductibilité
+  connue), ajouté sur demande explicite pour couvrir le protocole de base utile à un
+  biologiste débutant
 - ✅ Automatisation et analyse d'image (10)
 - ✅ Quantification de la fermeture (4)
 - ✅ Migration cellulaire et prolifération (4)
@@ -296,7 +299,16 @@ Couverture actuelle :
 - ✅ Métriques d'évaluation (Dice/IoU/Hausdorff) (3) — dont la référence qui explique
   l'instabilité du Hausdorff déjà documentée empiriquement dans ce projet (voir Résultats).
 - ✅ Analyse temporelle / cinétique (2) — la plus difficile à couvrir : le candidat le plus
-  pertinent était déjà dans le corpus, voir `curation_log.csv`.
+  pertinent était déjà dans le corpus, voir `curation_log.csv`. Confirmé par une seconde
+  recherche ciblée (session 2026-09-08, motivée par ce même constat) : sur 9 candidats
+  récupérés, aucun n'apportait de contenu réellement nouveau et pertinent (doublons avec des
+  articles déjà retenus, ou études d'intervention spécifique — ex: thérapie par pression
+  négative — hors du cœur méthode/quantification du projet). Rien ajouté à cette catégorie
+  plutôt que d'y forcer un article marginal.
+  **Retrieval, pas contenu** : constaté en usage réel que la requête fixe utilisée par
+  `generer_resume_stream` pour cette section ne retrouvait aucun des 2 articles de cette
+  catégorie dans le top 10 (les 2 sont bien dans le corpus, juste jamais remontés pour cette
+  formulation précise) — reformulée depuis, voir "Fiabilité de la génération par LLM" plus bas.
 - ⏸️ 2 articles écartés de ce tour d'ajout faute de résumé officiel accessible en texte
   intégral (Otsu 1979, paywall IEEE ; Seghier 2024, paywall Wiley) — non intégrés plutôt
   que résumés inventés, conformément à la règle de non-invention.
@@ -382,6 +394,35 @@ n'a pas été ajouté à `requirements.txt`, et l'index temporaire de test n'a p
 Pistes pour une itération future (voir Perspectives) : un modèle multilingue plus grand
 (`multilingual-e5-base`), ou une recherche hybride mots-clés + embeddings.
 
+**Recherche hybride (mots-clés + embeddings) : gain mesuré sur le retrieval, non retenu pour
+la génération après reconsidération.** `chatbot/index_articles.py` propose
+`chercher(question, n, hybride=True)` : fusionne la recherche par embeddings (ChromaDB) et une
+recherche par mots-clés (BM25 via `rank_bm25`, gratuit et local, ajouté à `requirements.txt`)
+par reciprocal rank fusion. Changement de code minimal, aucun coût ni dépendance lourde.
+
+- **Sur le benchmark de retrieval** (`chatbot/evaluate_retrieval.py`, qui compare les deux
+  modes) : Recall@3 60 % → **70 %**, MRR@10 0,514 → **0,637**, sans aucune régression sur les
+  10 questions — un gain net et mesuré.
+- **Risque mesuré sur la génération** (`chatbot.py`) : activer `hybride=True` change quels
+  articles réels atterrissent dans le contexte fourni au LLM pour la section "Mise en contexte
+  scientifique" — sans toucher un seul mot du prompt lui-même. Un test d'isolation (même
+  protocole que pour les modifications de prompt, voir section suivante) a montré que ce
+  changement de contexte déstabilise quand même les sections numériques du résumé : 3/3
+  générations en hybride ont fabriqué un taux de fermeture erroné et des bornes d'intervalle
+  inexistantes (ex: "36-48h", alors que les mesures ne couvrent que 0/24/48h), contre 2/3
+  correctes en mode original (embeddings seuls).
+- **Décision finale** : brièvement activé en production malgré ce risque, sur demande
+  explicite, puis désactivé à nouveau après reconsidération — pour un usage scientifique
+  sérieux (chiffres destinés à être réutilisés tels quels), le risque de fabrication l'emporte
+  sur le gain de retrieval. `hybride=False` dans les deux points d'appel de `chatbot.py` ;
+  `hybride=True` reste disponible et validé pour le retrieval seul (`evaluate_retrieval.py`).
+  `tests/test_chatbot_llm_regression.py` a été étendu avec les valeurs fabriquées observées
+  pendant l'épisode hybride, au cas où ce mode d'échec réapparaîtrait autrement.
+- **Leçon retenue** : avec ce modèle local, la fragilité déjà documentée ci-dessous ne se
+  limite pas au texte du prompt — changer le contexte injecté (même avec du contenu réel,
+  sans rien inventer) peut déstabiliser des sections du résumé qui n'utilisent pourtant pas ce
+  contexte.
+
 ### Fiabilité de la génération par LLM
 
 Plusieurs tests en direct du résumé scientifique (`generer_resume_stream`, onglet Suivi de
@@ -412,11 +453,74 @@ Cette expérience montre qu'avec le modèle local utilisé, l'ajout de consignes
 peut dégrader des parties du comportement précédemment fiables, pas seulement échouer sur son
 propre objectif. Toute modification du prompt est donc désormais validée par plusieurs
 générations réelles avant d'être conservée, jamais supposée correcte après une seule lecture
-du texte produit. [tests/test_chatbot_llm_regression.py](tests/test_chatbot_llm_regression.py)
+du texte produit.
+
+**La fragilité ne se limite pas au texte du prompt.** Une troisième expérience (voir
+"Recherche hybride" ci-dessus) a confirmé que changer uniquement le *contexte retrouvé* (des
+articles réels différents, aucun mot du prompt modifié) suffit à déclencher la même
+instabilité : 3/3 générations ont fabriqué des chiffres dans des sections qui n'utilisent
+même pas ce contexte, contre 2/3 correctes avec le contexte d'origine. Ce risque a été activé
+un temps en production sur demande explicite, puis désactivé à nouveau après reconsidération
+(voir "Recherche hybride" ci-dessus) — la règle de validation avant activation tient toujours,
+y compris pour un changement de contexte de retrieval, pas seulement pour le texte du prompt.
+[tests/test_chatbot_llm_regression.py](tests/test_chatbot_llm_regression.py)
 verrouille cette exigence : il génère un résumé réel (Ollama requis, ignoré automatiquement
 sinon, y compris en CI) sur des mesures connues et vérifie que le texte contient les valeurs
 calculées par le pipeline et ne contient aucune des valeurs fabriquées observées pendant le
 développement.
+
+**Un retrieval mal ciblé peut aussi ressembler à un problème de fiabilité, sans en être un.**
+Signalé en usage réel : la section "Mise en contexte scientifique" du résumé de cinétique
+répondait systématiquement qu'elle ne pouvait rien dire de pertinent. Diagnostic : la requête
+fixe utilisée pour cette section ne retrouvait aucun des 2 articles `analyse_temporelle` du
+corpus dans le top 10 — un vrai trou de retrieval (cohérent avec le Recall@3 déjà mesuré comme
+faible sur cette catégorie), pas une mauvaise réponse du LLM face à un contexte correct. La
+requête a été reformulée (vocabulaire repris des résumés d'articles ciblés, toujours
+`hybride=False`), validée par le même test d'isolation (3/3 générations propres) avant d'être
+gardée : `Sources` cite désormais des articles réellement pertinents (ex : "Study of Wound
+Healing Dynamics by Single Pseudo-Particle Tracking..."). Gain **partiel** : le prompt continue,
+à raison, à exiger une correspondance quantitative directe avant d'affirmer une concordance, donc
+la prose de cette section reste souvent prudente même avec de meilleures sources en contexte.
+
+**Retrieval encore meilleur ≠ génération plus fiable.** Une deuxième reformulation, ciblant en
+plus l'article "The Frequent Sampling of Wound Scratch Assay..." (les 2 articles les plus
+pertinents remontaient alors aux rangs 1 et 2, objectivement mieux que la reformulation
+retenue), a été testée puis rejetée : 3/3 générations ont cette fois fabriqué la vitesse
+moyenne et les vitesses par intervalle (ex : "7,2%/h" puis "0%/h" au lieu de 0,83%/h et
+1,58%/h). Cause probable : le résumé de cet article est lui-même dense en chiffres de
+cinétique (fenêtre de 6h, doses de médicaments, % de diminution de vitesse), que le modèle
+semble mélanger aux données de l'utilisateur. Retenu : le score de retrieval d'un changement
+ne dit rien de sa sécurité pour la génération — seul le test d'isolation en 3+3 générations
+tranche.
+
+**Même une consigne anti-fabrication peut elle-même provoquer une fabrication.** Suite à la
+découverte ci-dessus, une phrase a été ajoutée à `PROMPT_RAPPORT` juste après les extraits
+d'articles, avertissant explicitement le LLM que les chiffres des extraits appartiennent à
+D'AUTRES expériences et ne doivent jamais être recopiés comme des mesures de l'utilisateur —
+une clarification de bon sens, motivée par l'échec précédent. Testée en isolation (3
+générations) : **3/3 échecs**, l'un d'eux pire que tout ce qui avait été observé jusque-là
+(surface finale fabriquée à 5840 px² et fermeture à 93,76 % au lieu des vraies 56758 px² /
+39,8 %, plus des bornes d'intervalle inventées comme "(48-24) heures"). Retirée immédiatement.
+Constat : `PROMPT_RAPPORT` est désormais considéré comme étant à — ou au-delà de — son plafond
+de complexité sûre pour ce modèle local ; toute nouvelle demande d'ajouter "juste une consigne
+de plus" doit être accueillie avec scepticisme par défaut, quel que soit son bon sens apparent,
+et testée avant toute autre considération.
+
+**Une citation fabriquée, détectée en usage réel — corrigée sans toucher au prompt.** Un
+résumé généré en conditions réelles a cité un article intitulé *"Analysis of wound healing
+using digital image analysis"* : ce titre n'existe pas dans les 38 articles du corpus et ne
+correspond à aucune des sources réellement retrouvées pour cette génération — un titre inventé,
+pas un chiffre inventé, une variante que `test_chatbot_llm_regression.py` ne vérifiait pas.
+Plutôt que de retenter une consigne de prompt (risque déjà démontré ci-dessus),
+`chatbot/chatbot.py` gagne `detecter_citations_suspectes(texte, sources)` : une vérification
+**après coup**, en code pur (regex + comparaison floue avec `difflib`), qui repère les
+citations entre guillemets absentes des sources réellement retournées. Comme elle ne touche ni
+au prompt ni au contexte retrouvé, elle échappe à la règle d'isolation ci-dessus (rien à
+déstabiliser, c'est une lecture du texte déjà généré) — validée par
+[tests/test_chatbot_citations.py](tests/test_chatbot_citations.py) (6 cas, dont le titre
+fabriqué exact observé). Câblée dans `app.py` : un avertissement s'affiche sous les sources
+chaque fois qu'une citation ne correspond à aucune d'elles, pour le résumé de cinétique comme
+pour le chat. Ce n'est qu'un **détecteur** — il rend le problème visible, il ne l'empêche pas.
 
 ## Ingénierie
 
@@ -439,8 +543,8 @@ développement.
   Les 3 derniers runs sont l'étude multi-seed de robustesse (voir Résultats ci-dessus) ; même
   configuration que `unet_resnet34_holdout`, split et initialisation régénérés par seed. Pas
   encore d'autre configuration (encodeur/img_size/lr) testée — voir Perspectives.
-- **Tests** (`tests/`) : mesures, métriques, synthèse chatbot, régression LLM (Ollama requis,
-  auto-ignorée sinon).
+- **Tests** (`tests/`) : mesures, métriques, retrieval, synthèse chatbot, détection de
+  citations fabriquées, régression LLM (Ollama requis, auto-ignorée sinon).
 
 ### Ce qui n'est volontairement pas fait
 
@@ -481,10 +585,16 @@ pas des manques à corriger dans l'immédiat.
   question de comparaison Dice/U-Net échoue dans les deux langues avec cette formulation), mais
   une sensibilité plus large à la formulation et au vocabulaire de la question. Un premier essai
   avec un embedding multilingue a déjà été mené (voir section Base documentaire du RAG ci-dessus) :
-  amélioration partielle mais pas suffisante pour être adoptée telle quelle. Pistes pour une
-  itération plus poussée : un modèle multilingue plus grand (`multilingual-e5-base`), une
-  recherche hybride mots-clés + embeddings, ou l'augmentation de `n_results` — chacune à
-  valider par le même benchmark de retrieval avant/après, pas par un changement à l'aveugle.
+  amélioration partielle mais pas suffisante pour être adoptée telle quelle. Une recherche
+  hybride mots-clés + embeddings a aussi été testée : gain net sur ce même benchmark
+  (Recall@3 60 %→70 %, voir section "Recherche hybride" ci-dessus) mais déstabilise la
+  génération du résumé LLM en aval — validée côté retrieval, pas encore exploitable côté
+  chatbot sans repenser comment isoler la génération de ce contexte (ex : un appel LLM séparé
+  par section, piste déjà notée plus haut). Pistes restantes pour une itération plus poussée :
+  un modèle multilingue plus grand (`multilingual-e5-base`), l'augmentation de `n_results`, ou
+  résoudre l'incompatibilité hybride/génération elle-même — chacune à valider par le même
+  benchmark de retrieval ET par le test d'isolation de génération avant/après, pas par un
+  changement à l'aveugle.
 - **Validation externe** : évaluer le modèle sur des images de scratch assay d'un autre
   laboratoire/microscope demanderait un nouveau jeu de données annoté, non disponible à ce stade —
   perspective la plus utile pour renforcer la généralisation, mais qui dépasse une simple

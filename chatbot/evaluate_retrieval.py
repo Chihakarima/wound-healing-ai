@@ -163,8 +163,8 @@ def rank_of_expected(returned_titles: list[str], titres_attendus: list[str]) -> 
     return None
 
 
-def evaluate_question(entry: dict) -> dict:
-    articles = chercher(entry["question"], n=K_MAX)
+def evaluate_question(entry: dict, hybride: bool = False) -> dict:
+    articles = chercher(entry["question"], n=K_MAX, hybride=hybride)
     returned_titles = [a["titre"] for a in articles]
     rank = rank_of_expected(returned_titles, entry["titres_attendus"])
     return {
@@ -244,6 +244,25 @@ def main():
     print(f"\nRecall@{K_RECALL} sur ces {n_reform} questions : {recall_avant:.0%} (original) "
           f"-> {recall_apres:.0%} (reformulé)")
 
+    # Recherche hybride (embeddings + BM25 mots-clés, voir index_articles.py) : même
+    # benchmark, réinterrogé avec hybride=True, pour valider avant/après si cette
+    # piste (documentée en Perspectives du README) mérite d'être adoptée par défaut
+    # dans chatbot.py -- pas supposée bénéfique sur simple lecture du code.
+    resultats_hybrides = [evaluate_question(entry, hybride=True) for entry in BENCHMARK]
+    recall_at_3_hybride = sum(r["present_at_3"] for r in resultats_hybrides) / n
+    mrr_at_10_hybride = sum(r["reciprocal_rank"] for r in resultats_hybrides) / n
+
+    print(f"\n--- Recherche hybride (embeddings + BM25) ---")
+    for original, hybride in zip(resultats, resultats_hybrides):
+        rang_avant = original["rang_trouve"] if original["rang_trouve"] is not None else f">{K_MAX}"
+        rang_apres = hybride["rang_trouve"] if hybride["rang_trouve"] is not None else f">{K_MAX}"
+        marque = "OK " if hybride["present_at_3"] else "X  "
+        if original["rang_trouve"] != hybride["rang_trouve"]:
+            print(f"[{marque}] ({hybride['categorie']}) rang {rang_avant} -> {rang_apres} -- {hybride['question']}")
+
+    print(f"\nRecall@{K_RECALL} : {recall_at_3:.2%} (embeddings seuls) -> {recall_at_3_hybride:.2%} (hybride)")
+    print(f"MRR@{K_MAX}      : {mrr_at_10:.3f} (embeddings seuls) -> {mrr_at_10_hybride:.3f} (hybride)")
+
     with open(OUT_PATH, "w", encoding="utf-8") as f:
         json.dump({
             "k_recall": K_RECALL,
@@ -257,6 +276,13 @@ def main():
                 "recall_at_k_original": recall_avant,
                 "recall_at_k_reformule": recall_apres,
                 "comparaisons": comparaisons,
+            },
+            "hybrid_experiment": {
+                "recall_at_k_embeddings": recall_at_3,
+                "recall_at_k_hybride": recall_at_3_hybride,
+                "mrr_at_k_max_embeddings": mrr_at_10,
+                "mrr_at_k_max_hybride": mrr_at_10_hybride,
+                "per_question_hybride": resultats_hybrides,
             },
         }, f, indent=2, ensure_ascii=False)
     print(f"\nRésultats -> {OUT_PATH}")
