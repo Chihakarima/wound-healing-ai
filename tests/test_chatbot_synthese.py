@@ -15,6 +15,7 @@ from chatbot import (
     _format_intervalles,
     _format_synthese,
     _phrase_heterogeneite,
+    _phrase_interpretation,
     _phrase_reouverture,
 )
 
@@ -30,6 +31,14 @@ ROWS_REOUVERTURE = [
     {"time_h": 0, "area_px2": 94229, "closure_pct": 0.0},
     {"time_h": 24, "area_px2": 73791, "closure_pct": 21.7},
     {"time_h": 48, "area_px2": 92521, "closure_pct": 1.8},
+]
+
+# Mêmes mesures que ROWS_REOUVERTURE mais dans l'ordre chronologique correct
+# (sans réouverture) : les deux intervalles sont positifs (0,07%/h puis 0,83%/h).
+ROWS_SANS_REOUVERTURE = [
+    {"time_h": 0, "area_px2": 94229, "closure_pct": 0.0},
+    {"time_h": 24, "area_px2": 92521, "closure_pct": 1.8},
+    {"time_h": 48, "area_px2": 73791, "closure_pct": 21.7},
 ]
 
 
@@ -115,4 +124,27 @@ def test_phrase_reouverture_signale_le_bon_intervalle_et_la_bonne_valeur():
 
 def test_phrase_reouverture_absente_sans_delta_negatif():
     phrase = _phrase_reouverture(_calculer_intervalles(ROWS))
+    assert phrase.startswith("(")
+
+
+def test_phrase_interpretation_conserve_le_signe_negatif_sur_reouverture():
+    """Régression (2026-09-09) : même avec un patron explicite laissant le LLM
+    remplir bornes/vitesses lui-même, mistral 7B a fabriqué un signe "-" ou inversé
+    l'ordre des bornes. La phrase est maintenant entièrement pré-calculée, comme
+    _phrase_heterogeneite, pour éliminer ce risque plutôt que le corriger par une
+    consigne de prompt supplémentaire."""
+    phrase = _phrase_interpretation(_calculer_intervalles(ROWS_REOUVERTURE))
+    assert "0h-24h" in phrase and "0,9%/h" in phrase
+    assert "24h-48h" in phrase and "-0,83%/h" in phrase
+
+
+def test_phrase_interpretation_sans_reouverture_ne_fabrique_pas_de_signe():
+    phrase = _phrase_interpretation(_calculer_intervalles(ROWS_SANS_REOUVERTURE))
+    assert "24h-48h" in phrase and "0,83%/h" in phrase
+    assert "-0,83" not in phrase
+    assert "48h-24h" not in phrase
+
+
+def test_phrase_interpretation_absente_avec_un_seul_intervalle():
+    phrase = _phrase_interpretation(_calculer_intervalles(ROWS[:2]))
     assert phrase.startswith("(")

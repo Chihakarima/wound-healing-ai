@@ -357,6 +357,11 @@ d'équivalent) :
 Détail des mesures par point de temps (pour décrire la tendance point par point uniquement) :
 {mesures}
 
+Phrase de comparaison des intervalles, déjà composée par le pipeline (à reprendre mot pour mot \
+comme première phrase de "Interprétation prudente" si elle contient une vraie phrase ; si elle est \
+entre parenthèses, n'invente pas de comparaison à la place) :
+{phrase_interpretation}
+
 Réouverture partielle éventuelle, déjà détectée par le pipeline (à reprendre mot pour mot dans \
 "Interprétation prudente" si elle contient une vraie phrase ; si elle est entre parenthèses, \
 n'invente pas de réouverture à la place) :
@@ -394,28 +399,22 @@ est mesuré, ce qui est calculé, et ce qui reste prudent :
   "Vitesse de fermeture par intervalle" ci-dessus (ou depuis la synthèse chiffrée pour la vitesse
   moyenne) : ce sont les deux seuls endroits de ce prompt qui font autorité sur les vitesses.
   N'écris jamais une vitesse qui ne soit pas recopiée telle quelle depuis ces deux sections, SIGNE
-  NÉGATIF INCLUS quand il y en a un (ex: "-0,83%/h" doit rester "-0,83%/h", jamais "0,83%/h" : le
-  signe change le sens, une vitesse négative signifie que la surface a augmenté, pas seulement
-  fermé plus lentement).
+  INCLUS : recopie le signe "-" si la source en affiche un (une vitesse négative signifie que la
+  surface a augmenté, pas seulement fermé plus lentement), et n'en ajoute JAMAIS un si la source
+  n'en affiche pas -- dans les deux cas, le signe de ta phrase doit être identique à celui affiché
+  dans la source, jamais déduit ni copié depuis un autre exemple.
 - Reste un calcul, pas une interprétation biologique : ne parle pas encore ici d'accélération,
   de ralentissement, ni de ce que ça signifie pour la cicatrisation (voir section suivante).
 
 **Interprétation prudente**
-- Ce paragraphe compare les intervalles entre eux (ça supposerait des mesures à l'intérieur de
-  chaque intervalle, qu'on n'a pas, pour dire autre chose). S'il y a une ligne "Intervalle le plus
-  rapide / le plus lent" dans la section "Vitesse de fermeture par intervalle" ci-dessus, REPRENDS-LA
-  TELLE QUELLE dans
-  cet ordre (le plus rapide en premier) : n'inverse jamais cet ordre et ne recalcule/ne compare
-  jamais toi-même quel intervalle est le plus rapide, cette ligne fait seule autorité. Utilise le
-  patron "le taux moyen de fermeture estimé sur l'intervalle [bornes du plus rapide]
-  ([vitesse du plus rapide]%/h) est supérieur à celui estimé sur l'intervalle [bornes du plus lent]
-  ([vitesse du plus lent]%/h). Cette différence décrit uniquement les mesures disponibles et ne
-  permet pas, à elle seule, de conclure à une accélération biologique de la cicatrisation." EN
-  REPRENANT LES BORNES ET VITESSES EXACTES DE LA SECTION "Vitesse de fermeture par intervalle"
-  CI-DESSUS, SIGNE NÉGATIF INCLUS quand il y en a un (jamais "0,83%/h" à la place de "-0,83%/h" :
-  supprimer le signe change le sens du chiffre), jamais des valeurs numériques différentes ; n'écris
-  JAMAIS les mots "accélération", "accéléré", "ralentissement" ou "ralenti" au sujet de la
-  cicatrisation elle-même, et n'écris jamais que "la plaie cicatrise plus vite/plus lentement",
+- S'il y a une "Phrase de comparaison des intervalles" fournie plus bas (pas une note entre
+  parenthèses), REPRENDS-LA MOT POUR MOT comme première phrase de cette section, SANS CHANGER NI
+  RECALCULER NI RECOMPOSER un seul mot, un seul chiffre, un seul signe ou l'ordre des bornes : cette
+  phrase fait seule autorité, ne la remplace jamais par ta propre comparaison des intervalles même
+  si tu penses pouvoir la reformuler plus clairement. Si elle est entre parenthèses, n'invente aucune
+  comparaison à la place. N'écris JAMAIS les mots "accélération", "accéléré", "ralentissement" ou
+  "ralenti" au sujet de la cicatrisation elle-même ailleurs dans cette section, et n'écris jamais que
+  "la plaie cicatrise plus vite/plus lentement",
 - Si la "Réouverture partielle" ci-dessus contient une vraie phrase (pas une note entre
   parenthèses), REPRENDS-LA MOT POUR MOT, EN PLUS du reste de cette section, sans changer un seul
   chiffre et sans la recomposer toi-même : c'est une information factuelle importante pour le
@@ -615,6 +614,33 @@ def _phrase_heterogeneite(synthese: dict, intervalles: list[dict]) -> str:
     )
 
 
+def _phrase_interpretation(intervalles: list[dict]) -> str:
+    """Phrase toute faite pour "Interprétation prudente", composée dans le code
+    plutôt que laissée au LLM remplir un patron à trous. Constaté en pratique
+    (2026-09-09) : même avec un patron explicite ("le taux ... est supérieur à
+    celui ...") et une consigne de recopie stricte, mistral 7B fabrique parfois un
+    signe "-" sur une vitesse pourtant positive, ou inverse l'ordre des bornes d'un
+    intervalle -- un patron à trous laisse encore trop de place à l'erreur pour ce
+    genre de comparaison numérique, contrairement à une phrase entièrement fournie
+    (voir _phrase_heterogeneite, qui n'a jamais montré ce problème)."""
+    if len(intervalles) < 2:
+        return "(un seul intervalle disponible : pas de comparaison pertinente)"
+
+    plus_rapide = max(intervalles, key=lambda iv: iv["vitesse_pct_h"])
+    plus_lent = min(intervalles, key=lambda iv: iv["vitesse_pct_h"])
+    if plus_rapide is plus_lent:
+        return "(taux identique sur tous les intervalles : pas de comparaison pertinente)"
+
+    return (
+        f"Le taux moyen de fermeture estimé sur l'intervalle "
+        f"{_fr(plus_rapide['t_debut'])}h-{_fr(plus_rapide['t_fin'])}h ({_fr(plus_rapide['vitesse_pct_h'])}%/h) "
+        f"est supérieur à celui estimé sur l'intervalle "
+        f"{_fr(plus_lent['t_debut'])}h-{_fr(plus_lent['t_fin'])}h ({_fr(plus_lent['vitesse_pct_h'])}%/h). "
+        "Cette différence décrit uniquement les mesures disponibles et ne permet pas, à elle seule, "
+        "de conclure à une accélération biologique de la cicatrisation."
+    )
+
+
 def _phrase_reouverture(intervalles: list[dict]) -> str:
     """Phrase toute faite signalant qu'un intervalle a un delta de fermeture négatif
     (la surface non colonisée a augmenté : la plaie s'est partiellement rouverte),
@@ -690,6 +716,7 @@ def generer_resume_stream(rows: list[dict], n_articles: int = 3):
         synthese=_format_synthese(synthese, n_mesures=len(rows)),
         intervalles=_format_intervalles(intervalles),
         phrase_heterogeneite=_phrase_heterogeneite(synthese, intervalles),
+        phrase_interpretation=_phrase_interpretation(intervalles),
         phrase_reouverture=_phrase_reouverture(intervalles),
         mesures=_format_mesures(rows),
     )

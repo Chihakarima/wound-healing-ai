@@ -163,6 +163,23 @@ ROWS_REOUVERTURE = [
     {"time_h": 48, "area_px2": 92521, "closure_pct": 1.8},
 ]
 
+# Mêmes 3 mesures que ROWS_REOUVERTURE mais dans l'ordre chronologique réel de
+# l'expérience (retour biologiste, 2026-09-09) : ici la plaie se referme
+# progressivement, sans réouverture -- les deux intervalles sont positifs (0,07%/h
+# puis 0,83%/h). Cas volontairement piégeux pour le renforcement "signe négatif"
+# ajouté pour ROWS_REOUVERTURE : constaté en pratique, le LLM a une fois fabriqué
+# un signe "-" et inversé l'ordre des bornes ("48h-24h (-0,83%/h)" au lieu de
+# "24h-48h (0,83%/h)") en imitant l'exemple numérique "-0,83%/h" alors présent
+# dans le prompt -- corrigé en remplaçant l'exemple chiffré par une consigne
+# abstraite sur la conservation du signe (voir chatbot_prompt_fragility, mémoire
+# projet : un exemple chiffré dans un prompt peut être imité mot pour mot par un
+# petit modèle local, peu importe les vraies données).
+ROWS_SANS_REOUVERTURE = [
+    {"time_h": 0, "area_px2": 94229, "closure_pct": 0.0},
+    {"time_h": 24, "area_px2": 92521, "closure_pct": 1.8},
+    {"time_h": 48, "area_px2": 73791, "closure_pct": 21.7},
+]
+
 
 @pytest.mark.skipif(not _ollama_disponible(), reason="Ollama non disponible localement")
 def test_resume_llm_respecte_les_valeurs_calculees_3_points():
@@ -195,3 +212,14 @@ def test_resume_llm_signale_la_reouverture_partielle_sans_dire_ralentissement():
         assert mot_interdit not in texte.lower(), (
             f"mot interdit '{mot_interdit}' trouvé dans le résumé :\n\n{texte}"
         )
+
+
+@pytest.mark.skipif(not _ollama_disponible(), reason="Ollama non disponible localement")
+def test_resume_llm_n_invente_pas_de_signe_negatif_sans_reouverture():
+    """Régression : sur ce jeu de mesures sans réouverture (les deux intervalles
+    sont positifs), le LLM a une fois fabriqué "-0,83%/h" et inversé les bornes en
+    "48h-24h" au lieu de "24h-48h (0,83%/h)", en imitant l'exemple numérique
+    "-0,83%/h" alors présent dans PROMPT_RAPPORT (voir ROWS_SANS_REOUVERTURE)."""
+    texte = _generer_et_verifier(ROWS_SANS_REOUVERTURE)
+    assert "-0,83" not in texte, f"signe négatif fabriqué sur un taux positif :\n\n{texte}"
+    assert "48h-24h" not in texte, f"bornes d'intervalle inversées :\n\n{texte}"
