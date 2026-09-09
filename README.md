@@ -603,6 +603,21 @@ cette section, il s'agit d'un **retrait** d'instruction, pas d'un ajout — test
 quand même (3 générations) : répétition absente dans les 3, toujours 0 fabrication numérique,
 confirmé par la suite de tests complète (31/31).
 
+**Couverture de test élargie à plusieurs scénarios de mesures, pas un seul fixture fixe.**
+Limite identifiée lors d'une relecture du projet : jusque-là, `test_chatbot_llm_regression.py`
+ne vérifiait qu'un seul jeu de mesures (3 points, ~94 000 px²) — un "3/3 propre" dessus ne
+garantit rien sur un nombre de points différent ou un tout autre ordre de grandeur. Le test
+couvre maintenant 3 scénarios distincts : le cas canonique (3 points), un cas limite structurel
+(2 points, un seul intervalle — jamais couvert par un vrai appel LLM avant cet ajout), et un cas
+à 5 points/grandes surfaces avec une coïncidence délibérée (la vitesse moyenne globale égale
+numériquement le taux du dernier intervalle, pour stress-tester la confusion déjà observée entre
+les deux). Les deux nouveaux scénarios ont d'abord "échoué" à cause d'un bug du test lui-même,
+pas d'une fabrication : le LLM écrit parfois les grandes surfaces avec un séparateur de milliers
+("50 000" au lieu de "50000"), une mise en forme différente du même nombre correct — corrigé en
+acceptant les deux variantes plutôt qu'en durcissant le prompt. Aucune modification de prompt
+dans ce changement (uniquement du code de test) : pas soumis à la règle d'isolation ci-dessus.
+Suite complète : 33/33.
+
 ## Ingénierie
 
 - **Docker** : image CPU-only (wheels torch CPU explicites), `docker-compose.yml`
