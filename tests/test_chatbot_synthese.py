@@ -15,12 +15,21 @@ from chatbot import (
     _format_intervalles,
     _format_synthese,
     _phrase_heterogeneite,
+    _phrase_reouverture,
 )
 
 ROWS = [
     {"time_h": 0, "area_px2": 8410, "closure_pct": 0.0},
     {"time_h": 24, "area_px2": 5063, "closure_pct": 40.0},
     {"time_h": 48, "area_px2": 2407, "closure_pct": 71.6},
+]
+
+# Cas réel signalé par le biologiste (2026-09-09) : la plaie se referme puis se
+# rouvre partiellement -- delta_closure_pct négatif sur le 2e intervalle.
+ROWS_REOUVERTURE = [
+    {"time_h": 0, "area_px2": 94229, "closure_pct": 0.0},
+    {"time_h": 24, "area_px2": 73791, "closure_pct": 21.7},
+    {"time_h": 48, "area_px2": 92521, "closure_pct": 1.8},
 ]
 
 
@@ -77,4 +86,33 @@ def test_phrase_heterogeneite_utilise_le_taux_global_pas_un_taux_d_intervalle():
 def test_phrase_heterogeneite_absente_avec_un_seul_intervalle():
     synthese = _calculer_synthese(ROWS[:2])
     phrase = _phrase_heterogeneite(synthese, _calculer_intervalles(ROWS[:2]))
+    assert phrase.startswith("(")
+
+
+def test_format_intervalles_ne_produit_jamais_un_signe_double_sur_delta_negatif():
+    """Régression : un delta négatif (réouverture) produisait littéralement
+    "fermeture +-19,9 points de %" à cause d'un "+" codé en dur devant le nombre,
+    injecté tel quel dans le prompt du LLM (corrigé le 2026-09-09)."""
+    texte = _format_intervalles(_calculer_intervalles(ROWS_REOUVERTURE))
+    assert "+-" not in texte
+
+
+def test_format_intervalles_signale_la_reouverture_partielle():
+    texte = _format_intervalles(_calculer_intervalles(ROWS_REOUVERTURE))
+    assert "réouverture partielle" in texte
+    assert "19,9" in texte
+
+
+def test_phrase_reouverture_signale_le_bon_intervalle_et_la_bonne_valeur():
+    """Retour biologiste (2026-09-09) : un delta négatif décrit en "taux plus
+    faible" laisse croire à un simple ralentissement, alors que la surface non
+    colonisée a réellement augmenté -- signalé explicitement en une phrase
+    pré-calculée, comme _phrase_heterogeneite, plutôt que laissé au LLM."""
+    phrase = _phrase_reouverture(_calculer_intervalles(ROWS_REOUVERTURE))
+    assert "24h" in phrase and "48h" in phrase
+    assert "19,9" in phrase
+
+
+def test_phrase_reouverture_absente_sans_delta_negatif():
+    phrase = _phrase_reouverture(_calculer_intervalles(ROWS))
     assert phrase.startswith("(")

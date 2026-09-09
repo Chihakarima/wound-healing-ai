@@ -151,6 +151,18 @@ ROWS_5_POINTS = [
     {"time_h": 24, "area_px2": 300000, "closure_pct": 40.0},
 ]
 
+# Cas réel signalé par un biologiste (2026-09-09) : la plaie se referme (21,7% à
+# 24h) puis se rouvre partiellement (retombe à 1,8% à 48h) -- delta_closure_pct
+# négatif sur le 2e intervalle. Avant correction, ce cas était décrit comme un
+# simple "taux plus faible" (masquant la réouverture) et le prompt affichait un
+# bug d'affichage "+-19,9 points de %" (voir _format_intervalles). Couvre la
+# phrase _phrase_reouverture, jamais exercée par un vrai appel LLM avant cet ajout.
+ROWS_REOUVERTURE = [
+    {"time_h": 0, "area_px2": 94229, "closure_pct": 0.0},
+    {"time_h": 24, "area_px2": 73791, "closure_pct": 21.7},
+    {"time_h": 48, "area_px2": 92521, "closure_pct": 1.8},
+]
+
 
 @pytest.mark.skipif(not _ollama_disponible(), reason="Ollama non disponible localement")
 def test_resume_llm_respecte_les_valeurs_calculees_3_points():
@@ -165,3 +177,21 @@ def test_resume_llm_respecte_les_valeurs_calculees_2_points_un_seul_intervalle()
 @pytest.mark.skipif(not _ollama_disponible(), reason="Ollama non disponible localement")
 def test_resume_llm_respecte_les_valeurs_calculees_5_points_grande_surface():
     _generer_et_verifier(ROWS_5_POINTS)
+
+
+@pytest.mark.skipif(not _ollama_disponible(), reason="Ollama non disponible localement")
+def test_resume_llm_signale_la_reouverture_partielle_sans_dire_ralentissement():
+    """Ne bannit pas le mot "accélération" lui-même : la phrase-patron déjà en
+    place dans PROMPT_RAPPORT pour "Interprétation prudente" l'utilise légitimement
+    dans une négation ("... ne permet pas ... de conclure à une accélération
+    biologique de la cicatrisation"), y compris sur les scénarios sans réouverture.
+    Ce test vérifie seulement qu'une réouverture n'est jamais requalifiée en simple
+    ralentissement ("ralenti"/"ralentissement"), le risque concret signalé par le
+    biologiste (2026-09-09)."""
+    texte = _generer_et_verifier(ROWS_REOUVERTURE)
+    assert "19,9" in texte, f"réouverture partielle (19,9 points) absente du résumé :\n\n{texte}"
+    assert "+-" not in texte, f"bug d'affichage '+-' présent dans le résumé :\n\n{texte}"
+    for mot_interdit in ("ralenti", "ralentissement"):
+        assert mot_interdit not in texte.lower(), (
+            f"mot interdit '{mot_interdit}' trouvé dans le résumé :\n\n{texte}"
+        )

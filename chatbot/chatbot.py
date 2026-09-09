@@ -357,6 +357,11 @@ d'équivalent) :
 Détail des mesures par point de temps (pour décrire la tendance point par point uniquement) :
 {mesures}
 
+Réouverture partielle éventuelle, déjà détectée par le pipeline (à reprendre mot pour mot dans \
+"Interprétation prudente" si elle contient une vraie phrase ; si elle est entre parenthèses, \
+n'invente pas de réouverture à la place) :
+{phrase_reouverture}
+
 Rédige un résumé scientifique structuré EN EXACTEMENT 3 sections, avec ces 3 titres en gras et \
 dans cet ordre (rien avant, rien après, aucune section fusionnée ni omise) — chaque section ne \
 doit contenir QUE le type d'information indiqué, pour que le biologiste distingue toujours ce qui \
@@ -388,7 +393,10 @@ est mesuré, ce qui est calculé, et ce qui reste prudent :
 - IMPORTANT : chaque vitesse en %/h que tu écris doit être copiée mot pour mot depuis la section
   "Vitesse de fermeture par intervalle" ci-dessus (ou depuis la synthèse chiffrée pour la vitesse
   moyenne) : ce sont les deux seuls endroits de ce prompt qui font autorité sur les vitesses.
-  N'écris jamais une vitesse qui ne soit pas recopiée telle quelle depuis ces deux sections.
+  N'écris jamais une vitesse qui ne soit pas recopiée telle quelle depuis ces deux sections, SIGNE
+  NÉGATIF INCLUS quand il y en a un (ex: "-0,83%/h" doit rester "-0,83%/h", jamais "0,83%/h" : le
+  signe change le sens, une vitesse négative signifie que la surface a augmenté, pas seulement
+  fermé plus lentement).
 - Reste un calcul, pas une interprétation biologique : ne parle pas encore ici d'accélération,
   de ralentissement, ni de ce que ça signifie pour la cicatrisation (voir section suivante).
 
@@ -404,9 +412,16 @@ est mesuré, ce qui est calculé, et ce qui reste prudent :
   ([vitesse du plus lent]%/h). Cette différence décrit uniquement les mesures disponibles et ne
   permet pas, à elle seule, de conclure à une accélération biologique de la cicatrisation." EN
   REPRENANT LES BORNES ET VITESSES EXACTES DE LA SECTION "Vitesse de fermeture par intervalle"
-  CI-DESSUS, jamais des valeurs numériques différentes ; n'écris JAMAIS les mots "accélération",
-  "accéléré", "ralentissement" ou "ralenti" au sujet de la cicatrisation elle-même, et n'écris
-  jamais que "la plaie cicatrise plus vite/plus lentement",
+  CI-DESSUS, SIGNE NÉGATIF INCLUS quand il y en a un (jamais "0,83%/h" à la place de "-0,83%/h" :
+  supprimer le signe change le sens du chiffre), jamais des valeurs numériques différentes ; n'écris
+  JAMAIS les mots "accélération", "accéléré", "ralentissement" ou "ralenti" au sujet de la
+  cicatrisation elle-même, et n'écris jamais que "la plaie cicatrise plus vite/plus lentement",
+- Si la "Réouverture partielle" ci-dessus contient une vraie phrase (pas une note entre
+  parenthèses), REPRENDS-LA MOT POUR MOT, EN PLUS du reste de cette section, sans changer un seul
+  chiffre et sans la recomposer toi-même : c'est une information factuelle importante pour le
+  biologiste (la surface non colonisée a augmenté, pas seulement "ralenti"), jamais à passer sous
+  silence ni à reformuler en "ralentissement". Si elle est entre parenthèses, n'invente aucune
+  réouverture à la place.
 - rappelle en une phrase, SANS RÉPÉTER LE CHIFFRE (déjà donné dans "Résultats observés" ci-dessus,
   ne le recompte ni ne l'invente pas une seconde fois ici), que ce résumé décrit une évolution
   globale sur peu de mesures, pas une cinétique fine,
@@ -435,23 +450,27 @@ assay), à partir d'extraits d'articles déjà sélectionnés pour leur pertinen
 Extraits d'articles scientifiques pertinents :
 {contexte}
 
-Rédige un court paragraphe (2 à 4 phrases), en français :
-- Si un ou plusieurs extraits ci-dessus apportent un éclairage pertinent, cite leur titre complet
-  entre guillemets (jamais "le premier article") et résume en une phrase ce qu'ils montrent ou
-  soutiennent concrètement (méthode d'imagerie quantitative, mécanisme de migration cellulaire,
-  intérêt d'un suivi temporel de la fermeture...) — dis CE QU'ils établissent, pas seulement QU'ils
-  existent. Jamais de lien ni d'URL (les extraits n'en fournissent pas).
+Rédige un paragraphe COURT, 3 phrases MAXIMUM au total (jamais plus, même si plusieurs extraits \
+sont pertinents) — PAS une phrase ni un paragraphe par article, ce paragraphe reste une synthèse \
+groupée, jamais une revue de littérature détaillée :
+- Si un ou plusieurs extraits ci-dessus apportent un éclairage pertinent, UNE SEULE phrase cite
+  ensemble leur(s) titre(s) complet(s) entre guillemets (jamais "le premier article") et résume en
+  bloc ce qu'ils établissent concrètement (méthode d'imagerie quantitative, mécanisme de migration
+  cellulaire, intérêt d'un suivi temporel de la fermeture...) — dis CE QU'ils établissent, pas
+  seulement QU'ils existent, et ne détaille jamais leur méthodologie article par article. Jamais de
+  lien ni d'URL (les extraits n'en fournissent pas).
 - N'affirme JAMAIS qu'un résultat est "conforme à la littérature", "en accord avec les études", un
   "résultat normal", ou que les extraits "confirment" quoi que ce soit : les extraits sont en
   général des résumés généraux, pas des points de comparaison chiffrés dans des conditions
-  comparables. Termine par une phrase disant explicitement que ces travaux ne fournissent pas de
+  comparables.
+- Termine TOUJOURS par une phrase disant explicitement que ces travaux ne fournissent pas de
   valeur de référence directement comparable à cette expérience précise (protocole, système
   d'imagerie et conditions biologiques différents), et que toute mesure obtenue par ailleurs décrit
   sa propre série expérimentale, pas une comparaison à une cinétique biologique universelle.
-- Si aucun extrait ci-dessus n'apporte d'éclairage réellement pertinent, écris-le explicitement
-  (ex : "le corpus documentaire disponible ne permet pas de mettre ces résultats en contexte de
-  façon pertinente ici") plutôt que de forcer un lien approximatif avec un article qui ne
-  correspond pas.
+- Si aucun extrait ci-dessus n'apporte d'éclairage réellement pertinent, écris-le explicitement en
+  une phrase (ex : "le corpus documentaire disponible ne permet pas de mettre ces résultats en
+  contexte de façon pertinente ici") plutôt que de forcer un lien approximatif avec un article qui
+  ne correspond pas — dans ce cas, le paragraphe entier ne fait qu'une phrase.
 - Tu n'as accès à aucune mesure de surface, de fermeture ni de vitesse : n'en mentionne ni n'en
   invente aucune, ce paragraphe ne parle que de ce que montrent les extraits ci-dessus.
 """
@@ -543,11 +562,23 @@ def _format_intervalles(intervalles: list[dict]) -> str:
     if not intervalles:
         return "(un seul point de mesure disponible : pas d'intervalle à comparer)"
 
-    lignes = [
-        f"- Entre {_fr(iv['t_debut'])}h et {_fr(iv['t_fin'])}h : fermeture +{_fr(iv['delta_closure_pct'])} "
-        f"points de %, soit une vitesse de {_fr(iv['vitesse_pct_h'])}%/h sur cet intervalle"
-        for iv in intervalles
-    ]
+    lignes = []
+    for iv in intervalles:
+        if iv["delta_closure_pct"] < 0:
+            # Delta négatif : la surface non colonisée a augmenté sur cet intervalle
+            # (la plaie s'est partiellement rouverte), pas juste "fermé plus lentement" --
+            # signalé explicitement ici plutôt que de laisser un "+" trompeur devant un
+            # nombre négatif (ex: "+-19,9 points de %", corrigé le 2026-09-09).
+            lignes.append(
+                f"- Entre {_fr(iv['t_debut'])}h et {_fr(iv['t_fin'])}h : réouverture partielle, "
+                f"la surface non colonisée a augmenté de {_fr(abs(iv['delta_closure_pct']))} points de %, "
+                f"soit une vitesse de {_fr(iv['vitesse_pct_h'])}%/h sur cet intervalle"
+            )
+        else:
+            lignes.append(
+                f"- Entre {_fr(iv['t_debut'])}h et {_fr(iv['t_fin'])}h : fermeture +{_fr(iv['delta_closure_pct'])} "
+                f"points de %, soit une vitesse de {_fr(iv['vitesse_pct_h'])}%/h sur cet intervalle"
+            )
     if len(intervalles) > 1:
         plus_rapide = max(intervalles, key=lambda iv: iv["vitesse_pct_h"])
         plus_lent = min(intervalles, key=lambda iv: iv["vitesse_pct_h"])
@@ -581,6 +612,33 @@ def _phrase_heterogeneite(synthese: dict, intervalles: list[dict]) -> str:
         f"estimé est plus élevé sur l'intervalle {_fr(plus_rapide['t_debut'])}h-{_fr(plus_rapide['t_fin'])}h "
         f"({_fr(plus_rapide['vitesse_pct_h'])}%/h) que sur l'intervalle "
         f"{_fr(plus_lent['t_debut'])}h-{_fr(plus_lent['t_fin'])}h ({_fr(plus_lent['vitesse_pct_h'])}%/h)."
+    )
+
+
+def _phrase_reouverture(intervalles: list[dict]) -> str:
+    """Phrase toute faite signalant qu'un intervalle a un delta de fermeture négatif
+    (la surface non colonisée a augmenté : la plaie s'est partiellement rouverte),
+    composée dans le code plutôt que laissée au LLM. Constaté en pratique (retour du
+    biologiste, 2026-09-09) : le patron d'"Interprétation prudente" de PROMPT_RAPPORT
+    compare seulement "intervalle le plus rapide" vs "le plus lent", ce qui, pour un
+    delta négatif, se traduit en une simple différence de vitesse -- masquant le fait
+    plus important qu'il ne s'agit pas d'un ralentissement mais d'une réouverture
+    partielle de la plaie, une information que le biologiste doit voir explicitement
+    (mesure suspecte à vérifier, ou vrai phénomène biologique à creuser)."""
+    reouvertures = [iv for iv in intervalles if iv["delta_closure_pct"] < 0]
+    if not reouvertures:
+        return "(aucune réouverture observée sur les intervalles disponibles)"
+
+    lignes = [
+        f"la surface non colonisée a augmenté de {_fr(abs(iv['delta_closure_pct']))} points de % "
+        f"entre {_fr(iv['t_debut'])}h et {_fr(iv['t_fin'])}h"
+        for iv in reouvertures
+    ]
+    return (
+        "Réouverture partielle détectée sur les mesures disponibles : " + " ; ".join(lignes) + ". "
+        "Cela peut correspondre à un vrai phénomène biologique (ex: décollement cellulaire) ou à "
+        "une variation de mesure (segmentation, éclairage) : ce résumé ne permet pas de trancher, "
+        "une vérification de l'image concernée est recommandée."
     )
 
 
@@ -632,6 +690,7 @@ def generer_resume_stream(rows: list[dict], n_articles: int = 3):
         synthese=_format_synthese(synthese, n_mesures=len(rows)),
         intervalles=_format_intervalles(intervalles),
         phrase_heterogeneite=_phrase_heterogeneite(synthese, intervalles),
+        phrase_reouverture=_phrase_reouverture(intervalles),
         mesures=_format_mesures(rows),
     )
     prompt_contexte = PROMPT_CONTEXTE.format(contexte=_format_contexte(articles))
