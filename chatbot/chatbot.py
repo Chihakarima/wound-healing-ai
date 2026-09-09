@@ -357,13 +357,10 @@ d'équivalent) :
 Détail des mesures par point de temps (pour décrire la tendance point par point uniquement) :
 {mesures}
 
-Extraits d'articles scientifiques pertinents sur la cicatrisation :
-{contexte}
-
-Rédige un résumé scientifique structuré EN EXACTEMENT 4 sections, avec ces 4 titres en gras et \
+Rédige un résumé scientifique structuré EN EXACTEMENT 3 sections, avec ces 3 titres en gras et \
 dans cet ordre (rien avant, rien après, aucune section fusionnée ni omise) — chaque section ne \
 doit contenir QUE le type d'information indiqué, pour que le biologiste distingue toujours ce qui \
-est mesuré, ce qui est calculé, ce qui reste prudent, et ce qui vient de la littérature :
+est mesuré, ce qui est calculé, et ce qui reste prudent :
 
 **Résultats observés**
 - 1 à 2 phrases, UNIQUEMENT les valeurs mesurées telles quelles : nombre de mesures, surface
@@ -416,30 +413,48 @@ est mesuré, ce qui est calculé, ce qui reste prudent, et ce qui vient de la li
   globale sur peu de mesures, pas une cinétique fine,
 - n'affirme jamais une tendance qui contredirait les vitesses par intervalle fournies ci-dessus.
 
-**Mise en contexte scientifique**
-- Si et seulement si un ou plusieurs extraits ci-dessus apportent un éclairage pertinent, cite
-  leur titre complet entre guillemets (jamais "le premier article") et résume ce qu'ils apportent
-  comme contexte général (mécanismes, méthodes) — jamais de lien ni d'URL (les extraits n'en
-  fournissent pas). N'affirme JAMAIS que les mesures sont "conformes à la littérature", "en accord
-  avec les études", qu'il s'agit d'un "résultat normal", ou que les extraits "confirment" tes
-  chiffres : les extraits sont en général des résumés généraux, pas des points de comparaison
-  chiffrés dans des conditions expérimentales comparables aux tiennes. Dis explicitement que les
-  extraits apportent un contexte général mais ne permettent pas de conclure à une concordance
-  quantitative avec les valeurs mesurées, sauf si un extrait décrit vraiment des conditions et une
-  valeur chiffrée directement comparables (cas rare).
-- IMPORTANT : si aucun extrait ci-dessus n'apporte d'éclairage réellement pertinent pour cette
-  expérience précise, écris-le explicitement (ex : "le corpus documentaire disponible ne permet
-  pas de mettre ces résultats en contexte de façon pertinente ici") plutôt que de forcer un lien
-  approximatif avec un article qui ne correspond pas, et plutôt que de compléter avec des
-  connaissances supposées non présentes dans les extraits ci-dessus.
-
-Reste factuel et concis (5 à 9 phrases au total sur les 4 sections), sans réclamer d'information
+Reste factuel et concis (4 à 7 phrases au total sur les 3 sections), sans réclamer d'information
 supplémentaire au biologiste.
 
-RÈGLE GLOBALE VALABLE DANS LES 4 SECTIONS CI-DESSUS, PAS SEULEMENT DANS "Interprétation prudente" \
+RÈGLE GLOBALE VALABLE DANS LES 3 SECTIONS CI-DESSUS, PAS SEULEMENT DANS "Interprétation prudente" \
 : n'écris JAMAIS les mots "accélération", "accéléré", "ralentissement" ou "ralenti" au sujet de la \
 cicatrisation ou de sa vitesse, y compris dans "Analyse quantitative" où seule une différence de \
 taux moyens entre intervalles peut être mentionnée (jamais qu'un taux "accélère" ou "ralentit").
+"""
+
+
+# Appel isolé, séparé de PROMPT_RAPPORT : cette section a provoqué à deux reprises des
+# fabrications de chiffres dans les sections numériques quand elle partageait le même appel
+# LLM que les mesures (patron ouvert à trous, puis renforcement en prose -- voir
+# chatbot_prompt_fragility en mémoire projet et "Fiabilité de la génération par LLM" dans le
+# README). PROMPT_CONTEXTE ne reçoit jamais aucune mesure : la contamination croisée devient
+# structurellement impossible, pas seulement évitée par une consigne de prompt.
+PROMPT_CONTEXTE = """Tu es un assistant scientifique qui rédige la mise en contexte \
+bibliographique d'un résumé d'expérience de cicatrisation de plaie (wound healing / scratch \
+assay), à partir d'extraits d'articles déjà sélectionnés pour leur pertinence.
+
+Extraits d'articles scientifiques pertinents :
+{contexte}
+
+Rédige un court paragraphe (2 à 4 phrases), en français :
+- Si un ou plusieurs extraits ci-dessus apportent un éclairage pertinent, cite leur titre complet
+  entre guillemets (jamais "le premier article") et résume en une phrase ce qu'ils montrent ou
+  soutiennent concrètement (méthode d'imagerie quantitative, mécanisme de migration cellulaire,
+  intérêt d'un suivi temporel de la fermeture...) — dis CE QU'ils établissent, pas seulement QU'ils
+  existent. Jamais de lien ni d'URL (les extraits n'en fournissent pas).
+- N'affirme JAMAIS qu'un résultat est "conforme à la littérature", "en accord avec les études", un
+  "résultat normal", ou que les extraits "confirment" quoi que ce soit : les extraits sont en
+  général des résumés généraux, pas des points de comparaison chiffrés dans des conditions
+  comparables. Termine par une phrase disant explicitement que ces travaux ne fournissent pas de
+  valeur de référence directement comparable à cette expérience précise (protocole, système
+  d'imagerie et conditions biologiques différents), et que toute mesure obtenue par ailleurs décrit
+  sa propre série expérimentale, pas une comparaison à une cinétique biologique universelle.
+- Si aucun extrait ci-dessus n'apporte d'éclairage réellement pertinent, écris-le explicitement
+  (ex : "le corpus documentaire disponible ne permet pas de mettre ces résultats en contexte de
+  façon pertinente ici") plutôt que de forcer un lien approximatif avec un article qui ne
+  correspond pas.
+- Tu n'as accès à aucune mesure de surface, de fermeture ni de vitesse : n'en mentionne ni n'en
+  invente aucune, ce paragraphe ne parle que de ce que montrent les extraits ci-dessus.
 """
 
 
@@ -614,14 +629,28 @@ def generer_resume_stream(rows: list[dict], n_articles: int = 3):
 
     synthese = _calculer_synthese(rows)
     intervalles = _calculer_intervalles(rows)
-    prompt = PROMPT_RAPPORT.format(
+    prompt_resultats = PROMPT_RAPPORT.format(
         synthese=_format_synthese(synthese, n_mesures=len(rows)),
         intervalles=_format_intervalles(intervalles),
         phrase_heterogeneite=_phrase_heterogeneite(synthese, intervalles),
         mesures=_format_mesures(rows),
-        contexte=_format_contexte(articles),
     )
-    return _stream_ollama(prompt), [a["titre"] for a in articles]
+    prompt_contexte = PROMPT_CONTEXTE.format(contexte=_format_contexte(articles))
+
+    # Lancé eagerly (pas dans le générateur ci-dessous) pour garder le contrat de
+    # repondre_stream : lever RuntimeError immédiatement si Ollama est injoignable,
+    # avant de renvoyer quoi que ce soit à l'appelant.
+    flux_resultats = _stream_ollama(prompt_resultats)
+
+    def flux():
+        yield from flux_resultats
+        yield "\n\n**Mise en contexte scientifique**\n"
+        # Appel séparé, lancé seulement une fois le premier flux épuisé : ce prompt
+        # ne contient aucune mesure (voir PROMPT_CONTEXTE), donc rien de ce résumé
+        # numérique ne peut être contaminé par la génération de cette section.
+        yield from _stream_ollama(prompt_contexte)
+
+    return flux(), [a["titre"] for a in articles]
 
 
 if __name__ == "__main__":

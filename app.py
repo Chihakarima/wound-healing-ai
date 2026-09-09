@@ -3,6 +3,7 @@
 Usage:
     streamlit run app.py
 """
+import base64
 import io
 import os
 import sys
@@ -179,6 +180,64 @@ st.markdown(
         text-overflow: ellipsis;
         white-space: nowrap;
     }
+
+    /* --- Habillage inspiré des fenêtres d'image ImageJ : barre de titre grise
+       avec dimensions (comme le titre d'une fenêtre ImageJ, ex "image.tif (512x384; RGB)"),
+       cadre net sur fond clair au lieu d'un st.image nu. Purement visuel : ne change
+       aucune valeur calculée, seulement l'affichage des images déjà produites par le
+       pipeline (voir imagej_window_html ci-dessous). */
+    .ij-window {
+        border: 1px solid #8A8F98;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 0.9rem;
+        box-shadow: 1px 1px 4px rgba(15, 23, 42, 0.18);
+    }
+    .ij-titlebar {
+        background: linear-gradient(180deg, #F1F3F5, #D6DAE0);
+        border-bottom: 1px solid #8A8F98;
+        color: #1F2937;
+        font-family: "Segoe UI", Tahoma, Geneva, sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        padding: 0.25rem 0.55rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .ij-canvas {
+        background: #ECECEC;
+        padding: 0.4rem;
+        text-align: center;
+    }
+    .ij-canvas img {
+        max-width: 100%;
+        display: inline-block;
+    }
+    /* Fenêtre vide (avant chargement d'image) : canevas en pointillés avec message
+       d'invite, plutôt qu'un st.info bleu générique qui détonnait avec le reste. */
+    .ij-canvas-empty {
+        min-height: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px dashed #9CA3AF;
+        margin: 0.4rem;
+        color: #4B5563;
+        font-size: 0.95rem;
+    }
+
+    /* Lectures chiffrées (surface, Dice...) façon barre d'état ImageJ : police
+       technique à chasse fixe plutôt que la police d'interface habituelle. */
+    [data-testid="stMetricValue"] {
+        font-family: "Consolas", "SFMono-Regular", Menlo, monospace;
+    }
+
+    /* Barre latérale = boîte à outils : un peu plus dense, comme une palette d'outils. */
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+        gap: 0.4rem;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -222,6 +281,45 @@ def to_pil(image_bgr):
     return Image.fromarray(cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB))
 
 
+def _data_uri_png(image_bgr_or_gray) -> str:
+    ok, buf = cv2.imencode(".png", image_bgr_or_gray)
+    return "data:image/png;base64," + base64.b64encode(buf.tobytes()).decode("ascii")
+
+
+def imagej_window_html(image_bgr_or_gray, title: str) -> str:
+    """Rend une image dans un cadre inspiré des fenêtres d'image ImageJ : barre de
+    titre grise affichant les dimensions (ex "Image originale — 640×480 px · RGB"),
+    canevas clair autour de l'image. Purement cosmétique : n'affecte aucun calcul,
+    juste la présentation d'une image déjà produite ailleurs dans le pipeline.
+
+    Accepte une image BGR (3 canaux, comme le reste du code) ou en niveaux de gris
+    (masque). Retourne du HTML à passer à st.markdown(..., unsafe_allow_html=True)
+    (pas d'appel direct à st.image ici, pour pouvoir être utilisé dans une colonne
+    via col.markdown(...))."""
+    h, w = image_bgr_or_gray.shape[:2]
+    canaux = "RGB" if image_bgr_or_gray.ndim == 3 else "8-bit"
+    return (
+        '<div class="ij-window">'
+        f'<div class="ij-titlebar">{title} — {w}×{h} px · {canaux}</div>'
+        f'<div class="ij-canvas"><img src="{_data_uri_png(image_bgr_or_gray)}"/></div>'
+        "</div>"
+    )
+
+
+def imagej_placeholder_html(title: str, message: str) -> str:
+    """Fenêtre vide façon ImageJ (avant qu'une image soit chargée) : même barre de
+    titre grise que imagej_window_html, mais un canevas vide avec un message
+    d'invite au lieu d'une image — pour que l'état "rien encore analysé" reste
+    dans le même style que le reste de l'appli plutôt qu'un encart bleu générique
+    Streamlit (st.info)."""
+    return (
+        '<div class="ij-window">'
+        f'<div class="ij-titlebar">{title}</div>'
+        f'<div class="ij-canvas ij-canvas-empty">{message}</div>'
+        "</div>"
+    )
+
+
 def extract_stroke_mask(canvas_rgba, target_rgb, tol=60):
     """Isole les pixels dessinés (alpha > 0) proches de target_rgb sur le calque du canvas."""
     rgb = canvas_rgba[..., :3].astype(int)
@@ -253,7 +351,7 @@ st.caption(
 )
 
 with st.sidebar:
-    st.header("⚙️ Paramètres")
+    st.header("🧰 Boîte à outils")
     run_name = st.text_input(
         "Modèle utilisé", value="unet_resnet34",
         help="Nom du modèle entraîné à charger (correspond à un fichier dans outputs/checkpoints/).",
@@ -324,8 +422,8 @@ with tab_single:
         with st.container(border=True):
             if preprocess_on:
                 col0, col1, col2, col3 = st.columns(4)
-                col0.image(cv2.cvtColor(image_for_model, cv2.COLOR_BGR2RGB),
-                           caption="Image nettoyée (entrée du modèle)", use_container_width=True)
+                col0.markdown(imagej_window_html(image_for_model, "Image nettoyée (entrée du modèle)"),
+                               unsafe_allow_html=True)
                 _, cleaned_png = cv2.imencode(".png", image_for_model)
                 col0.download_button(
                     "⬇️ Télécharger l'image nettoyée",
@@ -336,9 +434,9 @@ with tab_single:
                 )
             else:
                 col1, col2, col3 = st.columns(3)
-            col1.image(cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB), caption="Image originale", use_container_width=True)
-            col2.image(mask * 255, caption="Masque prédit", use_container_width=True)
-            col3.image(cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB), caption="Contour détecté", use_container_width=True)
+            col1.markdown(imagej_window_html(image_bgr, "Image originale"), unsafe_allow_html=True)
+            col2.markdown(imagej_window_html(mask * 255, "Masque prédit"), unsafe_allow_html=True)
+            col3.markdown(imagej_window_html(overlay, "Contour détecté"), unsafe_allow_html=True)
 
         if len(contours) > 1:
             with st.container(border=True):
@@ -483,10 +581,7 @@ with tab_single:
 
                 st.markdown("**Résultat après correction**")
                 cc1, cc2 = st.columns([2, 1])
-                cc1.image(
-                    cv2.cvtColor(corrected_overlay, cv2.COLOR_BGR2RGB),
-                    caption="Contour corrigé", use_container_width=True,
-                )
+                cc1.markdown(imagej_window_html(corrected_overlay, "Contour corrigé"), unsafe_allow_html=True)
                 with cc2:
                     diff_px = corrected_area_px - wound_area_px(base_mask)
                     st.metric(
@@ -524,11 +619,15 @@ with tab_single:
                     cv2.drawContours(compare, gt_contours, -1, (0, 255, 0), 3)
                 if contours:
                     cv2.drawContours(compare, contours, -1, (0, 0, 255), 3)
-                st.image(cv2.cvtColor(compare, cv2.COLOR_BGR2RGB),
-                          caption="Vert = annotation manuelle · Rouge = prédiction du modèle",
-                          use_container_width=False, width=500)
+                st.markdown(
+                    imagej_window_html(compare, "Vert = annotation manuelle · Rouge = prédiction du modèle"),
+                    unsafe_allow_html=True,
+                )
     else:
-        st.info("👆 Chargez une image ci-dessus pour lancer la prédiction.")
+        st.markdown(
+            imagej_placeholder_html("Aucune image chargée", "👆 Chargez une image ci-dessus pour lancer la prédiction."),
+            unsafe_allow_html=True,
+        )
 
 with tab_kinetics:
     st.caption(
@@ -545,7 +644,13 @@ with tab_kinetics:
     )
 
     if not kinetics_files:
-        st.info("👆 Chargez au moins 2 images (idéalement 3 ou plus) pour lancer l'analyse.")
+        st.markdown(
+            imagej_placeholder_html(
+                "Aucune série chargée",
+                "👆 Chargez au moins 2 images (idéalement 3 ou plus) pour lancer l'analyse.",
+            ),
+            unsafe_allow_html=True,
+        )
     else:
         kinetics_files = sorted(kinetics_files, key=lambda f: f.name)
 
@@ -673,10 +778,9 @@ with tab_kinetics:
                     mask = masks_by_image[row["image"]]
                     contours = extract_contours(mask)
                     overlay = draw_contour_overlay(image_bgr, contours) if contours else image_bgr
-                    col.image(
-                        cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB),
-                        caption=f"{row['image']} (t={row['time_h']}h)",
-                        use_container_width=True,
+                    col.markdown(
+                        imagej_window_html(overlay, f"{row['image']} (t={row['time_h']}h)"),
+                        unsafe_allow_html=True,
                     )
 
             zip_buffer = io.BytesIO()

@@ -277,7 +277,7 @@ déjà discutée ci-dessus) et n'est reportée qu'à titre indicatif.
 
 ### Base documentaire du RAG
 
-38 articles sélectionnés manuellement (`chatbot/articles_cicatrisation.json`), et non
+41 articles sélectionnés manuellement (`chatbot/articles_cicatrisation.json`), et non
 100+ articles récupérés automatiquement sans tri : chaque candidat a été examiné (titre +
 résumé officiel vérifié à la source) et retenu ou rejeté selon sa pertinence réelle pour le
 projet, avec la décision et la raison tracées dans
@@ -293,18 +293,45 @@ Couverture actuelle :
 - ✅ Quantification de la fermeture (4)
 - ✅ Migration cellulaire et prolifération (4)
 - ✅ Analyse d'image classique (seuillage, texture, outils historiques) (3)
-- ✅ Deep learning / segmentation biomédicale (5) — U-Net original, un comparateur direct
+- ✅ Deep learning / segmentation biomédicale (6) — U-Net original, un comparateur direct
   U-Net appliqué au scratch assay (Dice 0,958-0,968 sur 400+ images, à mettre en regard du
-  Dice 0,882 du projet sur 97 images), et la justification de l'encodeur pré-entraîné.
-- ✅ Métriques d'évaluation (Dice/IoU/Hausdorff) (3) — dont la référence qui explique
-  l'instabilité du Hausdorff déjà documentée empiriquement dans ce projet (voir Résultats).
-- ✅ Analyse temporelle / cinétique (2) — la plus difficile à couvrir : le candidat le plus
+  Dice 0,882 du projet sur 97 images), et la justification de l'encodeur pré-entraîné. Ajouté
+  depuis (session 2026-09-08, ciblant l'échec persistant de la question de benchmark
+  « mon Dice de 0,88 est-il faible ? », voir plus bas) : un second comparateur indépendant,
+  U-Net + encodeur pré-entraîné ImageNet sur des micrographies de cellules souches
+  mésenchymateuses (pas un scratch assay, mais même modalité — microscopie en contraste de
+  phase — et même méthode), Dice = 0,876, quasi identique au Dice = 0,882 du projet. **Résultat
+  négatif honnête** : cet ajout ne corrige pas la question de benchmark visée (toujours absente
+  du top 10, voir plus bas) — confirme que le problème est la formulation/l'espace des
+  embeddings pour cette question précise, pas un manque de contenu pertinent dans le corpus.
+- ✅ Métriques d'évaluation (Dice/IoU/Hausdorff) (4) — dont la référence qui explique
+  l'instabilité du Hausdorff déjà documentée empiriquement dans ce projet (voir Résultats), et,
+  ajouté depuis (session 2026-09-08, gap identifié : aucun article ne reliait cette instabilité à
+  la géométrie de la plaie), l'article introduisant clDice, une mesure/perte topologique conçue
+  pour les structures tubulaires/fines — géométrie analogue à la bande fine et longue de la
+  plaie, dont les extrémités sont déjà identifiées comme la source du Hausdorff instable (voir
+  Résultats et Robustesse inter-seed). Candidat déjà repéré lors d'une curation antérieure mais
+  laissé de côté comme « hors domaine » (résumé officiel vérifié sur arXiv, voir
+  `curation_log.csv`) ; l'ajout est validé par une nouvelle question de benchmark dédiée
+  (`chatbot/evaluate_retrieval.py`) qui le retrouve au rang 3 (rang 2 en recherche hybride).
+  Benchmark final après les 3 ajouts de cette session (voir aussi ci-dessous) : Recall@3
+  60 % (6/10) → **66,7 % (8/12)**, MRR@10 0,514 → **0,526**, sans aucune régression sur les 10
+  questions d'origine (rangs tous inchangés, voir `retrieval_eval_results.json`).
+- ✅ Analyse temporelle / cinétique (3) — la plus difficile à couvrir : le candidat le plus
   pertinent était déjà dans le corpus, voir `curation_log.csv`. Confirmé par une seconde
   recherche ciblée (session 2026-09-08, motivée par ce même constat) : sur 9 candidats
   récupérés, aucun n'apportait de contenu réellement nouveau et pertinent (doublons avec des
   articles déjà retenus, ou études d'intervention spécifique — ex: thérapie par pression
-  négative — hors du cœur méthode/quantification du projet). Rien ajouté à cette catégorie
-  plutôt que d'y forcer un article marginal.
+  négative — hors du cœur méthode/quantification du projet). Rien ajouté à cette catégorie à ce
+  moment-là plutôt que d'y forcer un article marginal. Un article a toutefois été ajouté ensuite
+  dans la même session : *Modeling epithelial wound closure dynamics with AI* (2025), qui
+  combine segmentation (U-Net++ vs seuillage Otsu — parallèle direct avec la comparaison U-Net
+  vs baseline Otsu de ce projet) et modélisation temporelle de la trajectoire de fermeture
+  (Random Forest, ARIMA, réseau convolutif temporel). Résumé officiel vérifié sur PMC
+  (PMC12528918). Validé par une question de benchmark dédiée (rang 1, voir plus bas) — mais ne
+  répond pas à la question « combien de points de mesure sont nécessaires », qui reste sans
+  réponse retrouvée (voir juste en dessous) : un ajout de contenu complémentaire, pas un correctif
+  du trou de retrieval déjà identifié sur cette question précise.
   **Retrieval, pas contenu** : constaté en usage réel que la requête fixe utilisée par
   `generer_resume_stream` pour cette section ne retrouvait aucun des 2 articles de cette
   catégorie dans le top 10 (les 2 sont bien dans le corpus, juste jamais remontés pour cette
@@ -330,9 +357,13 @@ ponctuelle (2 questions) en un petit benchmark reproductible de 10 questions rep
 chacune associée au(x) titre(s) d'article jugé(s) pertinent(s) par relecture manuelle (comme le
 reste de la curation du corpus). Pour chaque question : rang du premier article attendu dans les
 résultats (`None` si absent du top 10), et si l'article ressort dans le top 3 (`n_articles=3`,
-la profondeur utilisée en production par `chatbot.py`). Résultat sur le corpus actuel :
+la profondeur utilisée en production par `chatbot.py`). Résultat sur le corpus actuel (10
+questions d'origine + 2 questions ajoutées lors de la session 2026-09-08 pour valider chacune un
+nouvel article, voir ci-dessus) :
 
-- **Recall@3 : 60 % (6/10)** — **MRR@10 : 0,514**
+- **Recall@3 : 66,7 % (8/12)** — **MRR@10 : 0,526** (10 questions d'origine seules, pour
+  référence historique : 60 % (6/10), MRR@10 0,514 — inchangé sur ces 10 questions précises,
+  voir `retrieval_eval_results.json`)
 - La question de comparaison directe Dice/U-Net échoue **dans les deux langues** avec cette
   formulation (l'article "An automated in vitro wound healing microscopy image analysis approach
   utilizing U-net-based deep learning methodology" n'apparaît dans le top 10 ni en anglais ni en
@@ -522,6 +553,36 @@ fabriqué exact observé). Câblée dans `app.py` : un avertissement s'affiche s
 chaque fois qu'une citation ne correspond à aucune d'elles, pour le résumé de cinétique comme
 pour le chat. Ce n'est qu'un **détecteur** — il rend le problème visible, il ne l'empêche pas.
 
+**"Mise en contexte scientifique" trop vague — séparée en un second appel LLM isolé, pas
+renforcée dans le même prompt.** Signalé en usage réel (résumés générés manuellement) : cette
+section se limitait souvent à mentionner que des extraits existaient, sans dire ce qu'ils
+montrent réellement. Une première tentative de correction a suivi la méthode habituelle
+(renforcer la consigne de cette section dans `PROMPT_RAPPORT`, sans template à trous cette
+fois) et a été **testée en isolation avant/après réécriture** (3 générations de référence, 3
+après modification, mêmes mesures) : la nouvelle consigne a bien amélioré cette section
+(contenu réellement résumé, conclusion "quantification de cette série, pas une cinétique
+universelle" comme voulu), mais a de nouveau déstabilisé des sections numériques qu'elle ne
+touchait pourtant pas — vitesse moyenne fabriquée à 12,76 %/h, 4,2 %/h puis 7,2 %/h selon la
+génération (vraie valeur : 0,83 %/h), bornes d'intervalle absurdes (`[100%-50%]`). 3/3 échecs :
+modification abandonnée immédiatement, cohérent avec l'épisode "recherche hybride" ci-dessus
+(le simple fait de renforcer ou changer le contenu autour des mesures suffit à les déstabiliser,
+même sans toucher au texte qui décrit ces mesures).
+
+Plutôt que de retenter une variante de prompt, `generer_resume_stream` a été restructurée en
+**deux appels LLM indépendants** : `PROMPT_RAPPORT` ne contient plus du tout d'extraits
+d'articles (3 sections : Résultats observés / Analyse quantitative / Interprétation prudente),
+et un nouveau `PROMPT_CONTEXTE` séparé ne reçoit, à l'inverse, **aucune mesure** — seulement les
+extraits — pour rédiger la 4ᵉ section. Les deux flux sont concaténés en Python après coup. La
+contamination croisée devient ainsi structurellement impossible (le second appel n'a physiquement
+pas accès aux chiffres pour les fabriquer), plutôt qu'évitée par une consigne qu'un modèle local
+peut ne pas suivre. Testée en isolation (3 générations) : **0 fabrication numérique sur les 3
+sections chiffrées**, et une "Mise en contexte scientifique" nettement plus substantielle dans
+les 3 cas (contenu réel de chaque article résumé, conclusion attendue présente). Confirmé par
+[tests/test_chatbot_llm_regression.py](tests/test_chatbot_llm_regression.py) (inchangé, toujours
+vert) et l'ensemble de la suite de tests. Coût : deux appels séquentiels au lieu d'un, donc un
+résumé complet prend plus longtemps à s'afficher en entier (chaque section reste toutefois
+diffusée en streaming dès qu'elle est prête).
+
 ## Ingénierie
 
 - **Docker** : image CPU-only (wheels torch CPU explicites), `docker-compose.yml`
@@ -578,12 +639,18 @@ pas des manques à corriger dans l'immédiat.
 ## Perspectives
 
 - **Qualité de récupération du RAG** : la base documentaire couvre maintenant toutes les
-  catégories prévues (37 articles, voir ci-dessus), mais la recherche sémantique par défaut
+  catégories prévues (41 articles, voir ci-dessus), mais la recherche sémantique par défaut
   (embeddings ChromaDB orientés anglais) ne remonte pas toujours l'article le plus pertinent. Le
-  benchmark reproductible ci-dessus (`chatbot/evaluate_retrieval.py`, Recall@3 = 60 %, MRR@10 =
-  0,514) affine le diagnostic initial : ce n'est pas seulement un écart français/anglais (la
+  benchmark reproductible ci-dessus (`chatbot/evaluate_retrieval.py`, Recall@3 = 66,7 % (8/12),
+  MRR@10 = 0,526) affine le diagnostic initial : ce n'est pas seulement un écart français/anglais (la
   question de comparaison Dice/U-Net échoue dans les deux langues avec cette formulation), mais
-  une sensibilité plus large à la formulation et au vocabulaire de la question. Un premier essai
+  une sensibilité plus large à la formulation et au vocabulaire de la question — confirmé une
+  troisième fois (session 2026-09-08) : l'ajout d'un second comparateur Dice/U-Net directement
+  pertinent au corpus (voir Base documentaire du RAG ci-dessus, Dice = 0,876) n'a **pas** suffi à
+  faire remonter cette question dans le top 10, alors que le contenu répondrait pourtant bien à
+  la question posée — la limite est donc bien dans la recherche (formulation/espace des
+  embeddings), pas dans la couverture du corpus, contrairement à ce qu'un simple ajout d'articles
+  pourrait laisser espérer. Un premier essai
   avec un embedding multilingue a déjà été mené (voir section Base documentaire du RAG ci-dessus) :
   amélioration partielle mais pas suffisante pour être adoptée telle quelle. Une recherche
   hybride mots-clés + embeddings a aussi été testée : gain net sur ce même benchmark

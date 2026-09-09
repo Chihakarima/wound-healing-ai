@@ -428,5 +428,41 @@
       "protocole",
       "reproductibilite"
     ]
+  },
+  {
+    "title": "clDice -- A Novel Topology-Preserving Loss Function for Tubular Structure Segmentation",
+    "abstract": "Accurate segmentation of tubular, network-like structures, such as vessels, neurons, or roads, is relevant to many fields of research. For such structures, the topology is their most important characteristic; particularly preserving connectedness: in the case of vascular networks, missing a connected vessel entirely alters the blood-flow dynamics. We introduce a novel similarity measure termed centerlineDice (short clDice), which is calculated on the intersection of the segmentation masks and their (morphological) skeleta. We theoretically prove that clDice guarantees topology preservation up to homotopy equivalence for binary 2D and 3D segmentation. Extending this, we propose a computationally efficient, differentiable loss function (soft-clDice) for training arbitrary neural segmentation networks. We benchmark the soft-clDice loss on five public datasets, including vessels, roads and neurons (2D and 3D). Training on soft-clDice leads to segmentation with more accurate connectivity information, higher graph similarity, and better volumetric scores.",
+    "year": 2021,
+    "category": "metrics_evaluation",
+    "topics": [
+      "metriques",
+      "evaluation",
+      "topologie",
+      "structures_fines"
+    ]
+  },
+  {
+    "title": "Modeling epithelial wound closure dynamics with AI: A comparative study across cell types",
+    "abstract": "Background: Skin wound healing exhibits complex spatiotemporal heterogeneity that challenges traditional static assessment methods. Current artificial intelligence (AI) approaches often treat segmentation and temporal modeling as disconnected processes, limiting dynamic quantification of healing trajectories across distinct cell types. We aim to develop an integrated AI framework combining enhanced segmentation with temporal modeling for quantifying in vitro wound closure dynamics in normal epithelial (MCF10A) and tumor (MCF7) cells, and to compare algorithmic performance across healing phenotypes. Methods: We implemented an enhanced UNet++ model for wound segmentation in time-lapse images, benchmarked against Otsu thresholding. Temporal closure trajectories were modeled using polynomial regression, Random Forest (RF), Support Vector Regression (SVR), Autoregressive Integrated Moving Average (ARIMA), and Temporal Convolutional Network (TCN). Performance was evaluated via Dice/IoU (segmentation) and MAE/R2 (temporal modeling). Results: UNet++ achieved significantly higher segmentation accuracy than Otsu thresholding (Dice: p = 8.841 x 10-49; IoU: p = 3.931 x 10-47) with consistent temporal robustness across healing phases. For closure trajectory modeling, RF achieved superior accuracy for MCF7 (mean absolute error [MAE] = 0.48 %, R2 = 0.968) and MCF10A (MAE = 1.73 %, R2 = 0.872), excelling in capturing nonlinear phase transitions and plateau behaviors. TCN showed promise for abrupt changes in MCF7 (MAE = 1.67 %, R2 = 0.698) but failed for near-stationary MCF10A trends. Significant cell-type differences emerged, with RF providing the most interpretable predictions. Conclusion: This integrated framework enables precise dynamic wound monitoring, holding clinical potential for chronic ulcer management and tumor margin surveillance, particularly through its ability to discern cell-type-specific healing phenotypes.",
+    "year": 2025,
+    "category": "analyse_temporelle",
+    "topics": [
+      "cinetique",
+      "analyse_temporelle",
+      "deep_learning",
+      "segmentation"
+    ]
+  },
+  {
+    "title": "Comparative Study of Deep Transfer Learning Models for Semantic Segmentation of Human Mesenchymal Stem Cell Micrographs",
+    "abstract": "The aim of this study is to conduct a comparative assessment of the effectiveness of neural network models-U-Net, DeepLabV3+, SegNet and Mask R-CNN-for the semantic segmentation of micrographs of human mesenchymal stem cells (MSCs). A dataset of 320 cell micrographs annotated by cell biology experts was created. The models were trained using a transfer learning method based on ImageNet pre-trained weights. As a result, the U-Net model demonstrated the best segmentation accuracy according to the metrics of the Dice coefficient (0.876) and the Jaccard index (0.781). The DeepLabV3+ and Mask R-CNN models also showed high performance, although slightly lower than U-Net, while SegNet exhibited the least accurate results. The obtained data indicate that the U-Net model is the most suitable for automating the segmentation of MSC micrographs and can be recommended for use in biomedical laboratories to streamline the routine analysis of cell cultures.",
+    "year": 2025,
+    "category": "deep_learning_segmentation",
+    "topics": [
+      "deep_learning",
+      "segmentation",
+      "u-net",
+      "transfer_learning"
+    ]
   }
 ]

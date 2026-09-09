@@ -110,6 +110,24 @@ BENCHMARK = [
             "A novel magnet-based scratch method for standardisation of wound-healing assays",
         ],
     },
+    {
+        "categorie": "metrics_evaluation",
+        "question": "Why is the Hausdorff distance unstable on a thin, elongated segmented shape like a wound?",
+        "titres_attendus": [
+            "clDice -- A Novel Topology-Preserving Loss Function for Tubular Structure Segmentation"
+        ],
+    },
+    {
+        # Catégorie volontairement distincte de "analyse_temporelle" (même si le sujet s'y
+        # rapporte) : ce nom sert de clé unique dans evaluate_reformulations() pour apparier
+        # question <-> reformulation, un doublon exact aurait fait matcher cette entrée à la
+        # place de la question de cinétique existante lors de l'évaluation des reformulations.
+        "categorie": "analyse_temporelle_ia_dynamique",
+        "question": "Can AI combine segmentation and temporal modeling to predict the wound closure trajectory over time?",
+        "titres_attendus": [
+            "Modeling epithelial wound closure dynamics with AI: A comparative study across cell types"
+        ],
+    },
 ]
 
 
