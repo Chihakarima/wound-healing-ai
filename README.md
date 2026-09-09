@@ -145,6 +145,51 @@ extrémités de la plaie, lissés par le TTA, pas d'un problème de recouvrement
 **opt-in** (pas le comportement par défaut de l'app ni des figures ci-dessous) : ~4x plus lent par
 image, et l'objectif du projet reste le recouvrement/la surface plutôt que le Hausdorff.
 
+### Ensemble de modèles + estimation de confiance par pixel
+
+Les 4 modèles indépendants déjà entraînés (`unet_resnet34_holdout` + les 3 graines de l'étude de
+robustesse ci-dessous) peuvent être combinés au lieu d'utiliser un seul modèle
+([src/ensemble.py](src/ensemble.py)) : chaque modèle prédit séparément, la prédiction finale est
+le vote majoritaire pixel par pixel, et le nombre de modèles en désaccord à chaque pixel donne une
+carte de confiance directement exploitable par le biologiste (superposée en vert = accord total,
+rouge = désaccord partiel dans l'app Streamlit, onglet "Analyse d'une image").
+
+Mesuré sur les 14 images de test (`python -m src.evaluate_ensemble --split test`) :
+
+| Métrique | Modèle unique (`unet_resnet34_holdout`) | **Ensemble (4 modèles)** |
+|---|---:|---:|
+| Dice | 0,882 | **0,893** |
+| IoU | 0,796 | **0,812** |
+| Precision | 0,852 | **0,881** |
+| Recall | 0,929 | 0,915 |
+| Hausdorff normalisé | 0,323 | **0,038** |
+| Erreur de surface relative | 15,9 % | **12,2 %** |
+
+**Lecture :** l'ensemble améliore Dice, IoU, precision et Hausdorff simultanément (un modèle
+unique n'améliore jamais tout à la fois sans compromis, voir le TTA ci-dessus qui gagne sur
+Hausdorff mais perd légèrement sur l'erreur de surface) — cohérent avec le principe du vote
+majoritaire, qui filtre les erreurs propres à un seul modèle sans propager ses faux positifs
+isolés. Le Hausdorff normalisé (0,038) est même meilleur que celui obtenu par TTA (0,043),
+sans le compromis sur l'erreur de surface. La légère baisse de recall (0,929 → 0,915) est le
+compromis attendu : le vote majoritaire filtre aussi quelques vrais positifs marginaux prédits
+par un seul modèle.
+
+**La carte de confiance est un signal réel, pas un gadget visuel** : corrélation de **-0,751**
+entre le % de zone en désaccord et le Dice par image sur le jeu de test — les images où les
+modèles divergent le plus sont statistiquement celles où l'ensemble se trompe le plus. Le
+désaccord se concentre visuellement aux extrémités fines de la plaie (vérifié visuellement dans
+l'app), cohérent avec l'explication déjà donnée pour l'instabilité du Hausdorff (TTA et
+robustesse inter-seed ci-dessus/ci-dessous).
+
+**Vérification préalable** : les 4 modèles combinés ont été contrôlés individuellement sur leurs
+courbes d'entraînement (`outputs/*_training_log.csv`) avant d'être combinés — val_loss < train_loss
+et val_dice > train_dice jusqu'à la dernière époque pour les 4, aucun signe de surapprentissage
+(cohérent avec l'explication déjà donnée pour `unet_resnet34_holdout` dans "Courbes
+d'apprentissage" ci-dessus : augmentation forte au train, pas un signal d'alerte).
+
+**Coût** : 4 modèles chargés et exécutés au lieu d'1 — plus lent et plus gourmand en mémoire,
+option désactivée par défaut dans l'app (case à cocher dans la barre latérale).
+
 ### Robustesse inter-seed
 
 Le run canonique ci-dessus (`unet_resnet34_holdout`) n'était pas reproductible à la graine près
@@ -259,7 +304,10 @@ déjà discutée ci-dessus) et n'est reportée qu'à titre indicatif.
 1. **Analyse d'une image** : masque, contour, surface (px²/cm²), suppression
    interactive de fragments de masque, prétraitement optionnel (débruitage,
    flat-field, CLAHE), correction manuelle du contour au pinceau, comparaison à
-   un masque de référence (Dice, IoU, erreur de surface).
+   un masque de référence (Dice, IoU, erreur de surface). Option **estimation de
+   confiance par ensemble de 4 modèles** (voir "Ensemble de modèles" ci-dessus) :
+   carte verte/rouge superposée + alerte automatique si la zone de désaccord entre
+   modèles dépasse 25 % de la zone détectée.
 2. **Suivi de cicatrisation** : suivi temporel multi-images, % de fermeture,
    courbe, résumé scientifique généré par LLM, puis un **chat RAG intégré**
    (ChromaDB + Ollama/mistral) sous le résumé pour poser des questions libres
@@ -639,8 +687,9 @@ Suite complète : 33/33.
   Les 3 derniers runs sont l'étude multi-seed de robustesse (voir Résultats ci-dessus) ; même
   configuration que `unet_resnet34_holdout`, split et initialisation régénérés par seed. Pas
   encore d'autre configuration (encodeur/img_size/lr) testée — voir Perspectives.
-- **Tests** (`tests/`) : mesures, métriques, retrieval, synthèse chatbot, détection de
-  citations fabriquées, régression LLM (Ollama requis, auto-ignorée sinon).
+- **Tests** (`tests/`) : mesures, métriques, ensemble (vote majoritaire, carte de confiance),
+  retrieval, synthèse chatbot, détection de citations fabriquées, régression LLM (Ollama requis,
+  auto-ignorée sinon).
 
 ### Ce qui n'est volontairement pas fait
 
@@ -715,6 +764,7 @@ python -m src.split_data                                          # (re)génère
 python -m src.train --run_name unet_resnet34_holdout               # entraînement
 python -m src.evaluate --run_name unet_resnet34_holdout --split test  # évaluation U-Net
 python -m src.evaluate --run_name unet_resnet34_holdout --split test --tta  # idem + TTA (voir Résultats)
+python -m src.evaluate_ensemble --split test                         # évaluation ensemble de 4 modèles (voir Résultats)
 python -m src.baseline --split test                                 # évaluation baseline
 python -m src.statistical_comparison                                 # test de Wilcoxon U-Net vs baseline
 python -m src.error_analysis_figures                                 # figures d'analyse d'erreur
@@ -725,6 +775,7 @@ python -m chatbot.evaluate_retrieval                                 # benchmark
 
 Résultats bruts : `outputs/predictions/test_metrics.json`,
 `outputs/predictions/test_metrics_tta.json`,
+`outputs/predictions/test_ensemble_metrics.json`,
 `outputs/predictions/test_baseline_metrics.json`,
 `outputs/predictions/test_statistical_comparison.json`,
 `outputs/predictions/test_error_by_category.csv`,

@@ -35,6 +35,7 @@ from streamlit_image_coordinates import streamlit_image_coordinates
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "chatbot"))
+from ensemble import RUN_NAMES_PAR_DEFAUT, load_ensemble, overlay_confiance, predict_ensemble
 from kinetics import build_figure, compute_kinetics_from_images, guess_time_h, save_csv, save_plot
 from measure import area_px_to_cm2, extract_contours, wound_area_px
 from metrics import confusion_counts, dice_score, iou_score
@@ -251,6 +252,16 @@ def get_model(run_name):
     return model, img_size, device
 
 
+@st.cache_resource
+def get_ensemble(run_names: tuple):
+    """Charge les 4 modèles de l'ensemble (voir src/ensemble.py). Mis en cache comme
+    get_model() : les checkpoints ne sont chargés qu'une fois par session Streamlit,
+    pas à chaque interaction."""
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    models_and_sizes = load_ensemble(list(run_names), device)
+    return models_and_sizes, device
+
+
 def read_image(uploaded_file):
     data = np.frombuffer(uploaded_file.read(), np.uint8)
     return cv2.imdecode(data, cv2.IMREAD_COLOR)
@@ -368,6 +379,19 @@ with st.sidebar:
     )
 
     st.divider()
+    use_ensemble = st.checkbox(
+        "🎯 Estimation de confiance (ensemble de 4 modèles)", value=False,
+        help="Combine 4 modèles entraînés indépendamment (voir README, Robustesse "
+             "inter-seed) au lieu d'un seul : la prédiction finale est le vote "
+             "majoritaire, et une carte de couleur montre où les modèles sont "
+             "d'accord (fiable) ou en désaccord (à vérifier à l'œil). Mesuré sur le "
+             "jeu de test : Dice 0,882→0,893, erreur de surface 15,9%→12,2%, et "
+             "corrélation de -0,75 entre le taux de désaccord et le Dice par image "
+             "(le signal de confiance est réellement pertinent). Plus lent (4 "
+             "modèles au lieu d'1) et ignore le réglage 'Modèle utilisé' ci-dessus.",
+    )
+
+    st.divider()
     st.subheader("🧹 Prétraitement (optionnel)")
     preprocess_on = st.checkbox(
         "Nettoyer l'image avant prédiction", value=False,
@@ -401,11 +425,16 @@ with tab_single:
     )
 
     if image_file is not None:
+        confiance_overlay = None
+        pct_zone_incertaine = None
         try:
-            model, img_size, device = get_model(run_name)
-        except FileNotFoundError:
-            st.error(f"Modèle introuvable pour '{run_name}'. "
-                     f"Vérifiez que le fichier outputs/checkpoints/{run_name}_best.pt existe.")
+            if use_ensemble:
+                models_and_sizes, device = get_ensemble(tuple(RUN_NAMES_PAR_DEFAUT))
+            else:
+                model, img_size, device = get_model(run_name)
+        except FileNotFoundError as exc:
+            st.error(f"Modèle introuvable ({exc}). Vérifiez que les checkpoints correspondants "
+                     f"existent dans outputs/checkpoints/.")
             st.stop()
 
         image_bgr = read_image(image_file)
@@ -413,7 +442,13 @@ with tab_single:
             clean_image(image_bgr, denoise_on, flatten_on, contrast_on, True)
             if preprocess_on else image_bgr
         )
-        mask = predict_mask(model, image_for_model, img_size, device, threshold=threshold)
+        if use_ensemble:
+            resultat_ensemble = predict_ensemble(models_and_sizes, image_for_model, device, threshold=threshold)
+            mask = resultat_ensemble["mask_consensus"]
+            pct_zone_incertaine = resultat_ensemble["pct_zone_incertaine"]
+            confiance_overlay = overlay_confiance(image_bgr, resultat_ensemble["carte_accord"], len(RUN_NAMES_PAR_DEFAUT))
+        else:
+            mask = predict_mask(model, image_for_model, img_size, device, threshold=threshold)
         contours = extract_contours(mask)
         area_px = wound_area_px(mask)
         overlay = draw_contour_overlay(image_bgr, contours) if contours else image_bgr
@@ -437,6 +472,25 @@ with tab_single:
             col1.markdown(imagej_window_html(image_bgr, "Image originale"), unsafe_allow_html=True)
             col2.markdown(imagej_window_html(mask * 255, "Masque prédit"), unsafe_allow_html=True)
             col3.markdown(imagej_window_html(overlay, "Contour détecté"), unsafe_allow_html=True)
+
+        if confiance_overlay is not None:
+            with st.container(border=True):
+                st.subheader("🎯 Confiance de l'ensemble")
+                conf_col1, conf_col2 = st.columns([2, 1])
+                conf_col1.markdown(
+                    imagej_window_html(confiance_overlay, "Accord entre les 4 modèles"),
+                    unsafe_allow_html=True,
+                )
+                conf_col1.caption("🟩 les 4 modèles sont d'accord — 🟥 désaccord partiel, zone à vérifier à l'œil.")
+                conf_col2.metric("Zone incertaine", f"{pct_zone_incertaine:.0f}%",
+                                  help="Part de la zone détectée où les 4 modèles ne sont pas unanimes. "
+                                       "Mesuré sur le jeu de test : corrélation de -0,75 avec le Dice par "
+                                       "image (plus de désaccord -> mesure moins fiable), voir README.")
+                if pct_zone_incertaine >= 25:
+                    conf_col2.warning(
+                        "Désaccord important entre les modèles sur cette image — vérifiez le "
+                        "contour à l'œil avant de réutiliser cette mesure."
+                    )
 
         if len(contours) > 1:
             with st.container(border=True):
