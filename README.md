@@ -583,6 +583,26 @@ vert) et l'ensemble de la suite de tests. Coût : deux appels séquentiels au li
 résumé complet prend plus longtemps à s'afficher en entier (chaque section reste toutefois
 diffusée en streaming dès qu'elle est prête).
 
+**Répétition du même caveat dans "Interprétation prudente" — retirée en simplifiant le prompt,
+pas en le renforçant.** Signalé en usage réel : cette section répétait deux fois la même idée
+("les vitesses par intervalle ne comparent que des taux moyens... ça ne démontre ni ne mesure une
+accélération" en ouverture, puis "cette différence décrit uniquement les mesures disponibles et
+ne permet pas... de conclure à une accélération biologique" dans la phrase-patron obligatoire
+juste après) — deux phrases différentes dans leur formulation mais portant exactement le même
+message. Confirmé systématique en relisant les transcripts d'isolation déjà produits pour les
+corrections précédentes (présent dans la quasi-totalité des générations, avant comme après
+l'architecture à deux appels ci-dessus). Cause identifiée dans le prompt lui-même : la consigne
+demandait explicitement d'expliquer ce caveat en préambule, immédiatement suivie d'une
+phrase-patron obligatoire qui l'exprime déjà, numériquement. Une détection de quasi-doublon par
+similarité textuelle (comme `detecter_citations_suspectes`) ne suffirait pas ici : les deux
+phrases ne se ressemblent pas assez littéralement (sujets différents) pour qu'une comparaison de
+chaînes les repère de façon fiable — la redondance est conceptuelle, pas textuelle. Correction
+retenue : suppression de la phrase de préambule redondante dans `PROMPT_RAPPORT` (la
+phrase-patron, elle, reste seule et suffisante). Contrairement à tous les épisodes précédents de
+cette section, il s'agit d'un **retrait** d'instruction, pas d'un ajout — testée en isolation
+quand même (3 générations) : répétition absente dans les 3, toujours 0 fabrication numérique,
+confirmé par la suite de tests complète (31/31).
+
 ## Ingénierie
 
 - **Docker** : image CPU-only (wheels torch CPU explicites), `docker-compose.yml`

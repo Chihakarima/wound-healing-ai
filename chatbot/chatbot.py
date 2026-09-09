@@ -393,11 +393,10 @@ est mesuré, ce qui est calculé, et ce qui reste prudent :
   de ralentissement, ni de ce que ça signifie pour la cicatrisation (voir section suivante).
 
 **Interprétation prudente**
-- Explique ce que ce calcul permet réellement de dire : les vitesses par intervalle ne comparent
-  que des taux moyens entre intervalles, ça ne démontre ni ne mesure une accélération ou un
-  ralentissement biologique de la cicatrisation (ça supposerait des mesures à l'intérieur de
-  chaque intervalle, qu'on n'a pas). S'il y a une ligne "Intervalle le plus rapide / le plus lent"
-  dans la section "Vitesse de fermeture par intervalle" ci-dessus, REPRENDS-LA TELLE QUELLE dans
+- Ce paragraphe compare les intervalles entre eux (ça supposerait des mesures à l'intérieur de
+  chaque intervalle, qu'on n'a pas, pour dire autre chose). S'il y a une ligne "Intervalle le plus
+  rapide / le plus lent" dans la section "Vitesse de fermeture par intervalle" ci-dessus, REPRENDS-LA
+  TELLE QUELLE dans
   cet ordre (le plus rapide en premier) : n'inverse jamais cet ordre et ne recalcule/ne compare
   jamais toi-même quel intervalle est le plus rapide, cette ligne fait seule autorité. Utilise le
   patron "le taux moyen de fermeture estimé sur l'intervalle [bornes du plus rapide]
